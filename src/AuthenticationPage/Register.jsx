@@ -133,52 +133,52 @@ const Register = () => {
     <div className="w-11/12 max-w-7xl mx-auto my-10 flex flex-col-reverse md:flex-row items-center gap-8">
       {/* Form Section */}
       <div className="w-full md:w-1/2">
-        <div className="bg-white p-8 shadow-md rounded-lg">
-          <h1 className="text-black font-semibold text-center text-2xl mb-4">
+        <div className="bg-base-200 p-8 shadow-md rounded-lg">
+          <h1 className="text-base-content font-semibold text-center text-2xl mb-4">
             Register Your Account
           </h1>
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="label">Name</label>
+              <label className="label text-base-content">Name</label>
               <input
                 name="name"
                 type="text"
-                className="input w-full border"
+                className="input input-bordered w-full"
                 placeholder="Name"
                 required
               />
             </div>
             <div className="">
-              <label className="label">Image</label>
+              <label className="label text-base-content">Image</label>
               <input
                 name="image"
                 type="file"
-                className="input w-full pt-1.5  border"
+                className="input input-bordered w-full pt-1.5"
                 required
                 onChange={handleImageUpload}
               />
             </div>
             <div>
-              <label className="label">Email</label>
+              <label className="label text-base-content">Email</label>
               <input
                 name="email"
                 type="email"
-                className="input w-full border"
+                className="input input-bordered w-full"
                 placeholder="Email"
                 required
               />
             </div>
             <div className="relative">
-              <label className="label">Password</label>
+              <label className="label text-base-content">Password</label>
               <input
                 name="password"
                 type={showPassword ? "text" : "password"}
-                className="input w-full border pr-10"
+                className="input input-bordered w-full pr-10"
                 placeholder="Password"
                 required
               />
               <span
-                className="absolute right-3 top-8 cursor-pointer text-xl text-gray-600"
+                className="absolute right-3 top-10 cursor-pointer text-xl text-base-content"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
@@ -187,25 +187,25 @@ const Register = () => {
 
             <button
               type="submit"
-              className="btn bg-[#161A20] text-white w-full mt-2"
+              className="btn bg-accent text-white w-full mt-2 hover:opacity-90"
             >
               Register
             </button>
 
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+            {errorMessage && <p className="text-error">{errorMessage}</p>}
             {successMessage && (
-              <p className="text-green-500">Successfully Signed Up</p>
+              <p className="text-success">Successfully Signed Up</p>
             )}
           </form>
 
-          <div className="divider">OR</div>
-           <div>
-             <GoogleLogin></GoogleLogin>
-           </div>
+          <div className="divider text-base-content">OR</div>
+          <div>
+            <GoogleLogin />
+          </div>
 
-          <p className="text-center mt-4 text-black font-semibold">
+          <p className="text-center mt-4 text-base-content font-semibold">
             Already have an account?{" "}
-            <Link className="text-red-600" to="/login">
+            <Link className="text-accent" to="/login">
               Login
             </Link>
           </p>
