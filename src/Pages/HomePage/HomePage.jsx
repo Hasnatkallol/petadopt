@@ -6,6 +6,7 @@ import AboutUs from "../Home/AboutUs";
 
 import HowItWorks from "../Home/HowItWorks";
 import FeaturedPetsCarousel from "../Home/FeaturedPetsCarousel";
+import Achievements from "../Home/Achievements";
 
 const HomePage = () => {
   return (
@@ -17,6 +18,7 @@ const HomePage = () => {
       <AboutUs></AboutUs>
       <HowItWorks></HowItWorks>
       <FeaturedPetsCarousel></FeaturedPetsCarousel>
+      <Achievements></Achievements>
     </div>
   );
 };

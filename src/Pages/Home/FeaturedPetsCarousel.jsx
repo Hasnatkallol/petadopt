@@ -61,7 +61,7 @@ const pets = [
 
 const FeaturedPetsSwiper = () => {
   return (
-    <section className="py-16 bg-base-100 border-5 w-11/12 mx-auto border-green-900 px-6">
+    <section className="py-16 bg-base-100  w-11/12 mx-auto  px-6">
       <div className="text-center mb-10">
         <p className="text-warning uppercase font-medium">Available Pets</p>
         <h2 className="text-4xl font-bold text-primary">Featured Pets</h2>
@@ -83,7 +83,7 @@ const FeaturedPetsSwiper = () => {
       >
         {pets.map((pet) => (
           <SwiperSlide key={pet.id}>
-            <div className="bg-white  border-3 border-red-500 shadow-md rounded-lg overflow-hidden">
+            <div className="bg-white  bshadow-md rounded-lg overflow-hidden">
               <div className="relative">
                 <img
                   src={pet.image}
