@@ -29,24 +29,24 @@ const DetailsPetListing = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const PhoneNumber = e.target.value.phone;
-    const address = e.target.value.address;
+    const phoneNumber = e.target.phone.value;
+    const address = e.target.address.value;
     const data = {
       id: _id,
       name: name,
       image: image,
       userName: user.displayName,
       userEmail: user.email,
-      phone: PhoneNumber,
+      phone: phoneNumber,
       address: address,
     };
-    console.log(data)
-    // try {
-    //   const response = await axios.post("http://localhost:5000", data);
-    //   console.log("Success:", response.data);
-    // } catch (error) {
-    //   console.error("Error submitting adoption request:", error);
-    // }
+    console.log(data);
+    try {
+      const response = await axios.post("http://localhost:5000/requestAdopt", data);
+      console.log("Success:", response.data);
+    } catch (error) {
+      console.error("Error submitting adoption request:", error);
+    }
   };
 
   return (
