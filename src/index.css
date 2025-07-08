@@ -10,38 +10,7 @@
   themes: light --default;
 }
 
-@plugin "daisyui/theme" {
-  name: "light";
-  default: true;
 
-  --color-primary: #fefaf6;       /* Warm soft white */
-  --color-secondary: #f4a261;     /* Friendly orange (buttons) */
-  --color-accent: #e76f51;        /* Coral red-orange (hover, CTA) */
-  --color-neutral: #fae1d0;       /* Light peach (bg, sidebar) */
-  --color-base-100: #ffffff;      /* Clean white for cards/sections */
-  --color-base-content: #2c3e50;  /* Deep slate for text */
-  --color-info: #219ebc;          /* Calm blue (alerts/info) */
-  --color-success: #2a9d8f;       /* Teal green (success, adopted) */
-  --color-warning: #e9c46a;       /* Warm yellow (warnings) */
-  --color-error: #e63946;         /* Reddish pink (errors) */
-}
-
-
-@plugin "daisyui/theme" {
-  name: "dark";
-  color-scheme: dark;
-
-  --color-primary: #1a1a1a;        /* Charcoal black */
-  --color-secondary: #f4a261;      /* Same friendly orange */
-  --color-accent: #ff7a5a;         /* Lighter coral (pops well on dark) */
-  --color-neutral: #2d2d2d;        /* Dark neutral for sidebar */
-  --color-base-100: #1f1f1f;       /* Base dark background */
-  --color-base-content: #f5f5f5;   /* Light neutral text */
-  --color-info: #90caf9;           /* Light blue info */
-  --color-success: #34d399;        /* Mint green success */
-  --color-warning: #fde68a;        /* Soft gold warning */
-  --color-error: #f87171;          /* Soft red for errors */
-}
 
 
 
