@@ -7,6 +7,8 @@ import Login from "../AuthenticationPage/Login";
 import Register from "../AuthenticationPage/Register";
 import AboutPage from "../Pages/AboutPage/AboutPage";
 import PrivateRoute from "../PrivateRoute/PrivateRoute";
+import PetListing from "../Pages/PetListing/PetListing";
+import DetailsPetListing from "../Pages/PetListing/DetailsPetListing";
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +19,16 @@ export const router = createBrowserRouter([
       {
         index: true,
         Component: HomePage,
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+      {
+        path: "petsListing",
+        Component: PetListing,
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+      {
+        path: "petsListing/:id",
+        Component: DetailsPetListing,
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
@@ -31,9 +43,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "about",
-         element:<PrivateRoute>
-          <AboutPage></AboutPage>
-         </PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <AboutPage></AboutPage>
+          </PrivateRoute>
+        ),
         hydrateFallbackElement: <Loading></Loading>,
       },
     ],
