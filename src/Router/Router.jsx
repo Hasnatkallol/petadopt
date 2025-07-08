@@ -29,6 +29,8 @@ export const router = createBrowserRouter([
       {
         path: "petsListing/:id",
         Component: DetailsPetListing,
+        loader: ({ params }) =>
+          fetch(`http://localhost:5000/adoptPet/${params.id}`),
         hydrateFallbackElement: <Loading></Loading>,
       },
       {

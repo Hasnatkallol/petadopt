@@ -19,6 +19,7 @@ const PetListing = () => {
     };
     fetchData();
   });
+    const { _id } = pets;
 
   // Get unique categories from pets for dropdown
   const categories = [...new Set(pets.map((pet) => pet.category))];
@@ -87,7 +88,7 @@ const PetListing = () => {
               <p>Age: {pet.age}</p>
               <p>Location: {pet.location}</p>
               <Link
-                to={`/petsListing/${pet.id}`}
+                to={`/petsListing/${pet._id}`}
                 className="card-actions justify-end"
               >
                 <button className="btn btn-primary">View Details</button>
