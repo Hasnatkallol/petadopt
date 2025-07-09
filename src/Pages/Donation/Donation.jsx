@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router";
 
 const Donation = () => {
   const [visibleCampaigns, setVisibleCampaigns] = useState([]);
@@ -70,7 +71,9 @@ const Donation = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h2 className="text-3xl font-semibold text-center mb-8">Donation Campaigns</h2>
+      <h2 className="text-3xl font-semibold text-center mb-8">
+        Donation Campaigns
+      </h2>
 
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {visibleCampaigns.map((pet) => (
@@ -93,9 +96,11 @@ const Donation = () => {
               <p className="mb-3 text-gray-700">
                 <strong>Donated:</strong> ${pet.donatedAmount}
               </p>
-              <button className="inline-block px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 w-full text-center font-medium">
-                View Details
-              </button>
+              <Link to={`/donations/${pet._id}`}>
+                <button className="inline-block px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 w-full text-center font-medium">
+                  View Details
+                </button>
+              </Link>
             </div>
           </div>
         ))}
@@ -129,7 +134,9 @@ const Donation = () => {
           </p>
         )}
         {endReached && !loading && (
-          <p className="text-lg font-medium text-gray-700">No more campaigns.</p>
+          <p className="text-lg font-medium text-gray-700">
+            No more campaigns.
+          </p>
         )}
       </div>
     </div>

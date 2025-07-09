@@ -9,7 +9,7 @@ const MainLayout = () => {
             <div>
                 <Navbar></Navbar>
             </div>
-            <div className="min-h-[calc(100vh-463px)]">
+            <div className="min-h-[calc(100vh-446px)]">
                 <Outlet></Outlet>
             </div>
              <div>
