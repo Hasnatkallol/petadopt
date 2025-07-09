@@ -1,7 +1,8 @@
 import React, { useContext, useState } from "react";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useLocation, useNavigate, useParams } from "react-router";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const DetailsPetListing = () => {
   const {
@@ -19,8 +20,15 @@ const DetailsPetListing = () => {
 
   const [showModal, setShowModal] = useState(false);
   const { user } = useContext(FirebaseAuthContext);
+  const navigate = useNavigate()
+  const Pathlocation = useLocation();
+  const {id}= useParams()
+  console.log(id)
 
   const handleAdoptClick = () => {
+    if(!user){
+     navigate('/login', { state: { from: Pathlocation.pathname }, replace: true });
+    }
     setShowModal(true);
   };
 
@@ -41,12 +49,29 @@ const DetailsPetListing = () => {
       address: address,
     };
     console.log(data);
-    try {
-      const response = await axios.post("http://localhost:5000/requestAdopt", data);
-      console.log("Success:", response.data);
-    } catch (error) {
-      console.error("Error submitting adoption request:", error);
-    }
+ try {
+  const response = await axios.post("http://localhost:5000/requestAdopt", data);
+
+  // Show success alert
+  Swal.fire({
+    icon: 'success',
+    title: 'Request Submitted!',
+    text: 'We will contact you soon about the adoption.',
+    confirmButtonColor: '#6366f1', // optional (Tailwind violet-600)
+  });
+
+  console.log("Success:", response.data);
+} catch (error) {
+  console.error("Error submitting adoption request:", error);
+
+  // Show error alert
+  Swal.fire({
+    icon: 'error',
+    title: 'Oops...',
+    text: 'Something went wrong while submitting your request.',
+    confirmButtonColor: '#ef4444', // optional (Tailwind red-500)
+  });
+}
   };
 
   return (

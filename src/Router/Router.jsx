@@ -9,6 +9,7 @@ import AboutPage from "../Pages/AboutPage/AboutPage";
 import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import PetListing from "../Pages/PetListing/PetListing";
 import DetailsPetListing from "../Pages/PetListing/DetailsPetListing";
+import Donation from "../Pages/Donation/Donation";
 
 export const router = createBrowserRouter([
   {
@@ -28,11 +29,31 @@ export const router = createBrowserRouter([
       },
       {
         path: "petsListing/:id",
-        Component: DetailsPetListing,
+        element: (
+        
+            <DetailsPetListing></DetailsPetListing>
+        
+        ),
         loader: ({ params }) =>
           fetch(`http://localhost:5000/adoptPet/${params.id}`),
         hydrateFallbackElement: <Loading></Loading>,
       },
+      {
+        path: "donations",
+        Component: Donation,
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+      // {
+      //   path: "donations/:id",
+      //   element: (
+      //     <PrivateRoute>
+           
+      //     </PrivateRoute>
+      //   ),
+      //   loader: ({ params }) =>
+      //     fetch(`http://localhost:5000/adoptPet/${params.id}`),
+      //   hydrateFallbackElement: <Loading></Loading>,
+      // },
       {
         path: "login",
         Component: Login,

@@ -1,13 +1,14 @@
 import React, { useContext } from "react";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import axios from "axios";
 
 const GoogleLogin = () => {
-  const {  setUser, setLoading, signInWithGoogle } =
+  const { setUser, setLoading, signInWithGoogle } =
     useContext(FirebaseAuthContext);
-    const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleGoogleLogin = () => {
     signInWithGoogle()
@@ -21,14 +22,14 @@ const GoogleLogin = () => {
           last_log_in: new Date().toISOString(),
         };
 
-          const userRes = await axios.post(
+        const userRes = await axios.post(
           "http://localhost:5000/users",
           userInfo
         );
         console.log("user update", userRes.data);
         setLoading(false);
         Swal.fire("Success!", "Signed in with Google", "success");
-        navigate(location.state?.from?.pathname || "/", { replace: true });
+        navigate(location?.state?.from || "/");
       })
       .catch((error) => {
         console.error(error);

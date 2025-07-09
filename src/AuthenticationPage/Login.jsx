@@ -16,6 +16,7 @@ const Login = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+  console.log("Location is " , location)
   const { emailLogin, setLoading } = useContext(FirebaseAuthContext);
 
   const handleLogin = (e) => {
@@ -28,7 +29,7 @@ const Login = () => {
         const user = userCredential.user;
         console.log(user);
         Swal.fire("Success!", "User logged in successfully", "success");
-        navigate(location.state || "/");
+        navigate(location?.state?.from || "/");
       })
       .catch((error) => {
         let message = "";
