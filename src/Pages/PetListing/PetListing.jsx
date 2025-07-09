@@ -18,20 +18,18 @@ const PetListing = () => {
       }
     };
     fetchData();
-  });
-    const { _id } = pets;
+  }, []);
 
   // Get unique categories from pets for dropdown
   const categories = [...new Set(pets.map((pet) => pet.category))];
 
   // Filter and sort pets according to your requirements
   const filteredPets = pets
-    .filter((pet) => pet.isAdopted == false)
+    .filter((pet) => pet.isAdopted === false)
     .filter((pet) => pet.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter((pet) =>
-      selectedCategory ? pet.category === selectedCategory : true
-    )
+    .filter((pet) => (selectedCategory ? pet.category === selectedCategory : true))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Adopt a Pet</h1>
@@ -41,17 +39,17 @@ const PetListing = () => {
         <input
           type="text"
           placeholder="Search pets by name..."
-          className="input input-bordered w-full md:w-1/2"
+          className="input border-1 p-2 rounded-2xl border-gray-400 shadow-2xl input-bordered w-full md:w-1/2"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
         <select
-          className="select select-bordered w-full md:w-1/4"
+          className="select border-1 p-2 rounded-2xl border-gray-400 shadow-2xl select-bordered w-full md:w-1/4"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-          <option value="">All Categories</option>
+          <option  value="">All Categories</option>
           {categories.map((cat, idx) => (
             <option key={idx} value={cat}>
               {cat}
@@ -70,29 +68,30 @@ const PetListing = () => {
 
         {filteredPets.map((pet) => (
           <motion.div
-            key={pet.id}
+            key={pet._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="card bg-base-100 shadow-xl"
+            className="max-w-sm bg-white rounded-lg border border-gray-200 shadow-md overflow-hidden"
           >
-            <figure>
-              <img
-                src={pet.image}
-                alt={pet.name}
-                className="h-48 w-full object-cover"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">{pet.name}</h2>
-              <p>Age: {pet.age}</p>
-              <p>Location: {pet.location}</p>
-              <Link
-                to={`/petsListing/${pet._id}`}
-                className="card-actions justify-end"
-              >
-                <button className="btn btn-primary">View Details</button>
-              </Link>
+            <img
+              className="rounded-t-lg w-full h-48 object-cover"
+              src={pet.image}
+              alt={pet.name}
+            />
+            <div className="p-5">
+              <h5 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
+                {pet.name}
+              </h5>
+              <p className="mb-1 text-gray-700">Age: {pet.age}</p>
+              <p className="mb-3 text-gray-700">Location: {pet.location}</p>
+              <div className="text-right">
+                <Link to={`/petsListing/${pet._id}`}>
+                  <button className="inline-block px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 font-medium">
+                    View Details
+                  </button>
+                </Link>
+              </div>
             </div>
           </motion.div>
         ))}
