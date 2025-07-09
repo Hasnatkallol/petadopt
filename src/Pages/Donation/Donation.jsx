@@ -1,63 +1,134 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import InfiniteScroll from "react-infinite-scroll-component";
+import React, { useEffect, useState } from 'react';
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Button,
+  Grid,
+  Box,
+  CircularProgress,
+} from '@mui/material';
 
 const Donation = () => {
-  const [campaigns, setCampaigns] = useState([]);
+  const [visibleCampaigns, setVisibleCampaigns] = useState([]);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [endReached, setEndReached] = useState(false);
 
-  const fetchCampaigns = async () => {
-    const res = await axios.get(`/api/donation-campaigns?page=${page}&limit=9`);
-    if (res.data.length === 0) {
-      setHasMore(false);
-    } else {
-      setCampaigns((prev) => [...prev, ...res.data]);
-      setPage((prev) => prev + 1);
-    }
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const fetchCampaigns = async (pageNumber) => {
+    const res = await fetch(`http://localhost:5000/donationPetDb?page=${pageNumber}&limit=9`);
+    if (!res.ok) throw new Error('Failed to fetch');
+    return await res.json();
   };
 
   useEffect(() => {
-    fetchCampaigns();
+    (async () => {
+      try {
+        const data = await fetchCampaigns(1);
+        setVisibleCampaigns(data);
+        setPage(2);
+      } catch (err) {
+        console.error(err);
+      }
+    })();
   }, []);
 
-  return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold mb-6">Donation Campaigns</h1>
+  const loadMore = async () => {
+    if (loading || endReached) return;
 
-      <InfiniteScroll
-        dataLength={campaigns.length}
-        next={fetchCampaigns}
-        hasMore={hasMore}
-        loader={<p className="text-center">Loading...</p>}
-        endMessage={<p className="text-center text-gray-500">No more campaigns.</p>}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {campaigns.map((campaign) => (
-            <div
-              key={campaign._id}
-              className="bg-white rounded-2xl shadow p-4 flex flex-col"
-            >
-              <img
-                src={campaign.petImage}
-                alt={campaign.petName}
-                className="h-48 object-cover rounded-xl mb-4"
+    setLoading(true);
+
+    // Wait 4 seconds before showing loading message
+    await delay(4000);
+
+    // Show loading message for 2 seconds
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0); // ensure setLoading(true) took effect
+      setTimeout(resolve, 2000);
+    });
+
+    try {
+      const data = await fetchCampaigns(page);
+      if (data.length === 0) {
+        setEndReached(true);
+      } else {
+        setVisibleCampaigns((prev) => [...prev, ...data]);
+        setPage((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 &&
+        !loading &&
+        !endReached
+      ) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [loading, endReached, page]);
+
+  return (
+    <Box sx={{ padding: 4 }}>
+      <Typography variant="h4" component="h2" align="center" gutterBottom>
+        Donation Campaigns
+      </Typography>
+
+      <Grid container spacing={3}>
+        {visibleCampaigns.map((pet) => (
+          <Grid item xs={12} sm={6} md={4} key={pet._id}>
+            <Card sx={{ maxWidth: 345, boxShadow: 3 }}>
+              <CardMedia
+                component="img"
+                height="200"
+                image={pet.petImage}
+                alt={pet.petName}
               />
-              <h2 className="text-xl font-semibold mb-2">{campaign.petName}</h2>
-              <p className="text-sm text-gray-600 mb-1">
-                Max Donation: ${campaign.maxAmount}
-              </p>
-              <p className="text-sm text-gray-600 mb-4">
-                Donated: ${campaign.donatedAmount}
-              </p>
-              <button className="mt-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                View Details
-              </button>
-            </div>
-          ))}
-        </div>
-      </InfiniteScroll>
-    </div>
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  {pet.petName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Max Donation:</strong> ${pet.maximumDonationAmount}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  <strong>Donated:</strong> ${pet.donatedAmount}
+                </Typography>
+                <Button variant="contained" fullWidth>
+                  View Details
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        {loading && (
+          <>
+            <CircularProgress />
+            <Typography variant="body1" sx={{ ml: 2 }}>
+              Loading more...
+            </Typography>
+          </>
+        )}
+        {endReached && !loading && (
+          <Typography variant="body1">No more campaigns.</Typography>
+        )}
+      </Box>
+    </Box>
   );
 };
 
