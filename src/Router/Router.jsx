@@ -11,6 +11,10 @@ import PetListing from "../Pages/PetListing/PetListing";
 import DetailsPetListing from "../Pages/PetListing/DetailsPetListing";
 import Donation from "../Pages/Donation/Donation";
 import DonationDetails from "../Pages/Donation/DonationDetails";
+import MyDonationCampaigns from "../Dashboard/UserDashboard/MyDonationCampaigns/MyDonationCampaigns";
+import DashBoardLayout from "../Layout/DashBoardLayout/DashBoardLayout";
+import MyProfile from "../DashBoardPage/MyProfile/MyProfile";
+import AddPet from "../DashBoardPage/AddPet/AddPet";
 
 export const router = createBrowserRouter([
   {
@@ -30,11 +34,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "petsListing/:id",
-        element: (
-        
-            <DetailsPetListing></DetailsPetListing>
-        
-        ),
+        element: <DetailsPetListing></DetailsPetListing>,
         loader: ({ params }) =>
           fetch(`http://localhost:5000/adoptPet/${params.id}`),
         hydrateFallbackElement: <Loading></Loading>,
@@ -45,10 +45,8 @@ export const router = createBrowserRouter([
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
-        path:  "donations/:id",
-        element: (
-          <DonationDetails></DonationDetails>
-        ),
+        path: "donations/:id",
+        element: <DonationDetails></DonationDetails>,
         loader: ({ params }) =>
           fetch(`http://localhost:5000/donationPetDb/${params.id}`),
         hydrateFallbackElement: <Loading></Loading>,
@@ -71,6 +69,34 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         hydrateFallbackElement: <Loading></Loading>,
+      },
+      {
+        path: "mydonationdampaigns",
+        Component: MyDonationCampaigns,
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+    ],
+  },
+  {
+    path: "dashboard",
+    element: (
+      <PrivateRoute>
+        <DashBoardLayout></DashBoardLayout>
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        index: true,
+        Component: MyProfile,
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+      // {
+      //   path: "/dashboard/myProfile",
+      //   Component: MyProfile,
+      // },
+      {
+        path: "/dashboard/addpet",
+        Component: AddPet,
       },
     ],
   },
