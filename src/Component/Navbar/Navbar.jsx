@@ -57,7 +57,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="sticky top-0 z-50 bg-base-200 shadow-md">
+    <div className="sticky   top-0 z-50 bg-base-200 shadow-md">
       <div className="w-11/12 mx-auto flex items-center justify-between py-4">
         {/* Mobile: Menu icon */}
         <div className="flex items-center gap-2 lg:hidden">

@@ -10,24 +10,24 @@ const DetailsPetListing = () => {
     name,
     age,
     image,
-    description,
     location,
     breed,
     gender,
     vaccinated,
     adoptionStatus,
+    longDescription, // <-- added field
   } = useLoaderData();
 
   const [showModal, setShowModal] = useState(false);
   const { user } = useContext(FirebaseAuthContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const Pathlocation = useLocation();
-  const {id}= useParams()
-  console.log(id)
+  const { id } = useParams();
+  console.log(id);
 
   const handleAdoptClick = () => {
-    if(!user){
-     navigate('/login', { state: { from: Pathlocation.pathname }, replace: true });
+    if (!user) {
+      navigate('/login', { state: { from: Pathlocation.pathname }, replace: true });
     }
     setShowModal(true);
   };
@@ -35,6 +35,7 @@ const DetailsPetListing = () => {
   const closeModal = () => {
     setShowModal(false);
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const phoneNumber = e.target.phone.value;
@@ -49,29 +50,26 @@ const DetailsPetListing = () => {
       address: address,
     };
     console.log(data);
- try {
-  const response = await axios.post("http://localhost:5000/requestAdopt", data);
+    try {
+      const response = await axios.post("http://localhost:5000/requestAdopt", data);
 
-  // Show success alert
-  Swal.fire({
-    icon: 'success',
-    title: 'Request Submitted!',
-    text: 'We will contact you soon about the adoption.',
-    confirmButtonColor: '#6366f1', // optional (Tailwind violet-600)
-  });
+      Swal.fire({
+        icon: 'success',
+        title: 'Request Submitted!',
+        text: 'We will contact you soon about the adoption.',
+        confirmButtonColor: '#6366f1',
+      });
 
-  console.log("Success:", response.data);
-} catch (error) {
-  console.error("Error submitting adoption request:", error);
-
-  // Show error alert
-  Swal.fire({
-    icon: 'error',
-    title: 'Oops...',
-    text: 'Something went wrong while submitting your request.',
-    confirmButtonColor: '#ef4444', // optional (Tailwind red-500)
-  });
-}
+      console.log("Success:", response.data);
+    } catch (error) {
+      console.error("Error submitting adoption request:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Something went wrong while submitting your request.',
+        confirmButtonColor: '#ef4444',
+      });
+    }
   };
 
   return (
@@ -116,7 +114,7 @@ const DetailsPetListing = () => {
           </p>
         </div>
 
-        <p className="text-gray-600 leading-relaxed">{description}</p>
+        <p className="text-gray-600 leading-relaxed">{longDescription}</p>
 
         <button
           onClick={handleAdoptClick}
@@ -130,7 +128,6 @@ const DetailsPetListing = () => {
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
           <div className="relative flex flex-col items-center max-w-lg w-full gap-4 p-6 rounded-md shadow-md sm:py-8 sm:px-12 bg-white text-gray-800">
-            {/* Close Button */}
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-600 hover:text-red-500"
@@ -145,27 +142,22 @@ const DetailsPetListing = () => {
               </svg>
             </button>
 
-            {/* Pet Image */}
             <img
               src={image}
               alt={name}
               className="w-32 h-32 object-cover rounded-full border"
             />
 
-            {/* Modal Title */}
             <h2 className="text-2xl font-semibold text-center">
               Confirm Your Interest in Adopting {name}
             </h2>
 
-            {/* Pet Info (Optional Display) */}
             <div className="text-sm text-gray-500 mb-2">Pet ID: {_id}</div>
 
-            {/* Form */}
             <form
               className="w-full flex flex-col gap-4"
               onSubmit={handleSubmit}
             >
-              {/* User Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Name
@@ -178,7 +170,6 @@ const DetailsPetListing = () => {
                 />
               </div>
 
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Email
@@ -191,7 +182,6 @@ const DetailsPetListing = () => {
                 />
               </div>
 
-              {/* Phone Number */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Phone Number
@@ -204,7 +194,6 @@ const DetailsPetListing = () => {
                 />
               </div>
 
-              {/* Address */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Address
@@ -216,7 +205,6 @@ const DetailsPetListing = () => {
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="w-full px-4 py-2 mt-4 font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700"

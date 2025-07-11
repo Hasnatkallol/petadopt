@@ -30,6 +30,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "react-router": "^7.6.3",
     "react-router-dom": "^7.6.3",
+    "react-select": "^5.10.2",
     "react-slick": "^0.30.3",
     "slick-carousel": "^1.8.1",
     "stripe": "^18.3.0",

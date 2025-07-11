@@ -85,6 +85,7 @@ const PetListing = () => {
               </h5>
               <p className="mb-1 text-gray-700">Age: {pet.age}</p>
               <p className="mb-3 text-gray-700">Location: {pet.location}</p>
+              <p className="mb-3 text-gray-700"> {pet.shortDescription}</p>
               <div className="text-right">
                 <Link to={`/petsListing/${pet._id}`}>
                   <button className="inline-block px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 font-medium">
