@@ -8,6 +8,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from "@tanstack/react-table";
+import Swal from "sweetalert2";
 
 const MyAddedPet = () => {
   const { user } = useContext(FirebaseAuthContext);
@@ -16,20 +17,45 @@ const MyAddedPet = () => {
   const [sorting, setSorting] = useState([]);
 
   useEffect(() => {
-    setErrmsg("");
     if (!user) return;
-    const email = user.email;
-
+    setErrmsg("");
     axios
-      .get(`http://localhost:5000/adoptPet?email=${email}`)
-      .then((response) => {
-        setMyPets(response.data);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch pets:", error);
-        setErrmsg(error.response?.data?.message || "Something went wrong");
+      .get(`http://localhost:5000/adoptPet?email=${user.email}`)
+      .then((res) => setMyPets(res.data))
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        setErrmsg(err.response?.data?.message || "Something went wrong");
       });
   }, [user]);
+
+  const handleDelete = (_id) => {
+    setErrmsg("");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:5000/adoptPet/${_id}?email=${user.email}`)
+          .then((res) => {
+            if (res.data.deletedCount) {
+              Swal.fire("Deleted!", "Deleted successfully.", "success");
+              const remaining = myPets.filter((pet) => pet._id !== _id);
+              setMyPets(remaining);
+            }
+          })
+          .catch((error) => {
+            console.error("Delete error:", error);
+            setErrmsg(error.response?.data?.message || "Failed to delete");
+          });
+      }
+    });
+  };
 
   const columns = useMemo(
     () => [
@@ -39,7 +65,7 @@ const MyAddedPet = () => {
         id: "sn",
       },
       {
-        header: "Pet Name",
+        header: "Name",
         accessorKey: "name",
       },
       {
@@ -53,7 +79,7 @@ const MyAddedPet = () => {
           <img
             src={getValue()}
             alt="pet"
-            className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
+            className="w-16 h-16 rounded-lg object-cover border"
           />
         ),
       },
@@ -62,7 +88,7 @@ const MyAddedPet = () => {
         accessorKey: "isAdopted",
         cell: ({ getValue }) => (
           <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
+            className={`px-2 py-1 text-xs rounded-full font-medium ${
               getValue()
                 ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
@@ -76,29 +102,30 @@ const MyAddedPet = () => {
         header: "Actions",
         id: "actions",
         cell: ({ row }) => (
-          <div className="flex space-x-2">
+          <>
             <button className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition duration-200 shadow-sm">
               Update
             </button>
-            <button className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm transition duration-200 shadow-sm">
+            <button
+              onClick={() => handleDelete(row.original._id)}
+              className="px-3 py-1 bg-red-500 mx-1 hover:bg-red-600 text-white rounded text-sm"
+            >
               Delete
             </button>
             <button className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition duration-200 shadow-sm">
               Adopted
             </button>
-          </div>
+          </>
         ),
       },
     ],
-    []
+    [myPets]
   );
 
   const table = useReactTable({
     data: myPets,
     columns,
-    state: {
-      sorting,
-    },
+    state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -106,102 +133,52 @@ const MyAddedPet = () => {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            My Added Pets
-            <span className="ml-2 bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full">
-              {myPets.length}
-            </span>
-          </h1>
-        </div>
+    <div className="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold mb-4 flex items-center justify-between flex-wrap gap-2">
+          <span>My Added Pets</span>
+          <span className="px-3 py-1 text-sm bg-indigo-100 text-indigo-800 rounded-full">
+            {myPets.length}
+          </span>
+        </h1>
 
         {errmsg && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
             {errmsg}
           </div>
         )}
 
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
+        <div className="overflow-x-auto border rounded-lg shadow-sm">
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
+            <thead className="bg-gray-100 ">
+              {table.getHeaderGroups().map((group) => (
+                <tr key={group.id}>
+                  {group.headers.map((header) => (
                     <th
                       key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition duration-150"
+                      className="px-4 sm:px-6 py-3  text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap"
                     >
-                      <div className="flex items-center">
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {header.column.getIsSorted() === "asc" ? (
-                          <svg
-                            className="ml-1 h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 15l7-7 7 7"
-                            />
-                          </svg>
-                        ) : header.column.getIsSorted() === "desc" ? (
-                          <svg
-                            className="ml-1 h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="ml-1 h-4 w-4 opacity-0 group-hover:opacity-100"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 15l7-7 7 7"
-                            />
-                          </svg>
-                        )}
-                      </div>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                     </th>
                   ))}
                 </tr>
               ))}
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-100">
               {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-gray-50 transition duration-150"
-                >
+                <tr key={row.id} className="hover:bg-gray-50  ">
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
+                      className="px-4 sm:px-6 py-4 text-gray-700  align-middle whitespace-nowrap"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
+                        
                       )}
                     </td>
                   ))}
@@ -211,43 +188,22 @@ const MyAddedPet = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {myPets.length > 10 && (
-          <div className="mt-4 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
-            <div className="text-sm text-gray-600">
-              Showing page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-                className="px-3 py-1 border rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                First
-              </button>
-              <button
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-                className="px-3 py-1 border rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-                className="px-3 py-1 border rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-              <button
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-                className="px-3 py-1 border rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Last
-              </button>
-            </div>
+          <div className="mt-6 flex flex-col sm:flex-row justify-end items-center gap-2">
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="px-4 py-1.5 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="px-4 py-1.5 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>
@@ -256,6 +212,3 @@ const MyAddedPet = () => {
 };
 
 export default MyAddedPet;
-
-
-  
