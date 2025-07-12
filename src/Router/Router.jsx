@@ -15,6 +15,7 @@ import MyDonationCampaigns from "../Dashboard/UserDashboard/MyDonationCampaigns/
 import DashBoardLayout from "../Layout/DashBoardLayout/DashBoardLayout";
 import MyProfile from "../DashBoardPage/MyProfile/MyProfile";
 import AddPet from "../DashBoardPage/AddPet/AddPet";
+import MyAddedPet from "../DashBoardPage/MyAddedPet/MyAddedPet";
 
 export const router = createBrowserRouter([
   {
@@ -87,16 +88,18 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        path:'/dashboard/myProfile',
         Component: MyProfile,
         hydrateFallbackElement: <Loading></Loading>,
       },
-      // {
-      //   path: "/dashboard/myProfile",
-      //   Component: MyProfile,
-      // },
+  
       {
         path: "/dashboard/addpet",
         Component: AddPet,
+      },
+          {
+        path: "/dashboard/myAddedPet",
+        Component: MyAddedPet,
       },
     ],
   },

@@ -38,7 +38,7 @@ const DashboardLayout = () => {
             <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
               Add a Pet
             </NavLink>
-            <NavLink to="#" className="hover:text-blue-600">
+            <NavLink to="/dashboard/myAddedPet" className="hover:text-blue-600">
               My Added Pets
             </NavLink>
             <NavLink to="#" className="hover:text-blue-600">
