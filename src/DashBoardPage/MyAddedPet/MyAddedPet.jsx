@@ -9,6 +9,7 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import Swal from "sweetalert2";
+import { Link } from "react-router";
 
 const MyAddedPet = () => {
   const { user } = useContext(FirebaseAuthContext);
@@ -103,9 +104,11 @@ const MyAddedPet = () => {
         id: "actions",
         cell: ({ row }) => (
           <>
-            <button className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition duration-200 shadow-sm">
-              Update
-            </button>
+            <Link to={`/dashboard/update/${row.original._id}`}>
+              <button className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition duration-200 shadow-sm">
+                Update
+              </button>
+            </Link>
             <button
               onClick={() => handleDelete(row.original._id)}
               className="px-3 py-1 bg-red-500 mx-1 hover:bg-red-600 text-white rounded text-sm"
@@ -178,7 +181,6 @@ const MyAddedPet = () => {
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
-                        
                       )}
                     </td>
                   ))}

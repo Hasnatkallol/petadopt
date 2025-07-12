@@ -16,6 +16,7 @@ import DashBoardLayout from "../Layout/DashBoardLayout/DashBoardLayout";
 import MyProfile from "../DashBoardPage/MyProfile/MyProfile";
 import AddPet from "../DashBoardPage/AddPet/AddPet";
 import MyAddedPet from "../DashBoardPage/MyAddedPet/MyAddedPet";
+import UpdatePet from "../DashBoardPage/MyAddedPet/UpdatePet";
 
 export const router = createBrowserRouter([
   {
@@ -88,18 +89,26 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        path:'/dashboard/myProfile',
+        path: "/dashboard/myProfile",
         Component: MyProfile,
         hydrateFallbackElement: <Loading></Loading>,
       },
-  
+
       {
         path: "/dashboard/addpet",
         Component: AddPet,
       },
-          {
+      {
         path: "/dashboard/myAddedPet",
         Component: MyAddedPet,
+      },
+      {
+        path: "/dashboard/update/:id",
+        loader: ({ params }) =>
+          fetch(
+            `http://localhost:5000/adoptPet/${params.id}`
+          ),
+        Component: UpdatePet,
       },
     ],
   },

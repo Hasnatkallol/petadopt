@@ -1,8 +1,52 @@
-import React, { useContext, useState } from "react";
-import Select from "react-select";
-import axios, { Axios } from "axios";
-import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
+import axios from "axios";
+import React, { useContext,  useState } from "react";
+import { useLoaderData } from "react-router-dom";
 import Swal from "sweetalert2";
+import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
+import Select from "react-select";
+
+// Reusable Input component
+const Input = ({ label, value, onChange, error }) => (
+  <div className="mb-5">
+    <label className="block mb-1 font-semibold text-gray-700">{label}:</label>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`w-full px-3 py-2 border rounded-md ${
+        error ? "border-red-500" : "border-gray-300"
+      }`}
+    />
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
+
+// Reusable SelectField component
+const SelectField = ({ label, options, value, onChange, error }) => (
+  <div className="mb-5">
+    <label className="block mb-1 font-semibold text-gray-700">{label}:</label>
+    <div
+      className={`border rounded-md ${
+        error ? "border-red-500" : "border-gray-300"
+      }`}
+    >
+      <Select
+        options={options}
+        value={value}
+        onChange={onChange}
+        placeholder={`Select ${label.toLowerCase()}`}
+        styles={{
+          control: (base) => ({
+            ...base,
+            border: "none",
+            boxShadow: "none",
+          }),
+        }}
+      />
+    </div>
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
 
 const categories = [
   { value: "Dog", label: "Dog" },
@@ -15,20 +59,28 @@ const genders = [
   { value: "Female", label: "Female" },
 ];
 
-const AddPet = () => {
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [category, setCategory] = useState(null);
-  const [location, setLocation] = useState("");
-  const [breed, setBreed] = useState("");
-  const [gender, setGender] = useState(null);
-  const [vaccinated, setVaccinated] = useState(false);
-  const [shortDesc, setShortDesc] = useState("");
-  const [longDesc, setLongDesc] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+const UpdatePet = () => {
+  const { user } = useContext(FirebaseAuthContext);
+  const pet = useLoaderData();
+
+  // Initialize state with pet data
+  const [name, setName] = useState(pet.name || "");
+  const [age, setAge] = useState(pet.age || "");
+  const [category, setCategory] = useState(
+    categories.find((c) => c.value === pet.category) || null
+  );
+  const [location, setLocation] = useState(pet.location || "");
+  const [breed, setBreed] = useState(pet.breed || "");
+  const [gender, setGender] = useState(
+    genders.find((g) => g.value === pet.gender) || null
+  );
+  const [vaccinated, setVaccinated] = useState(pet.vaccinated || false);
+  const [shortDesc, setShortDesc] = useState(pet.shortDescription || "");
+  const [longDesc, setLongDesc] = useState(pet.longDescription || "");
+  const [imageUrl, setImageUrl] = useState(pet.image || "");
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
-  const { user } = useContext(FirebaseAuthContext);
+
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
 
@@ -57,7 +109,6 @@ const AddPet = () => {
       setErrors((prev) => ({
         ...prev,
         image: "Failed to upload image. Please try again.",
-       
       }));
       setImageUrl("");
     } finally {
@@ -73,14 +124,13 @@ const AddPet = () => {
     if (!breed.trim()) newErrors.breed = "Breed is required";
     if (!gender) newErrors.gender = "Gender is required";
     if (!location.trim()) newErrors.location = "Pet location is required";
-    if (!shortDesc.trim())
-      newErrors.shortDesc = "Short description is required";
+    if (!shortDesc.trim()) newErrors.shortDesc = "Short description is required";
     if (!longDesc.trim()) newErrors.longDesc = "Long description is required";
     if (!imageUrl) newErrors.image = "Pet image is required";
     return newErrors;
   };
 
-  const handleSubmit = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length) {
@@ -89,7 +139,7 @@ const AddPet = () => {
     }
 
     const now = new Date().toISOString();
-    const data = {
+    const updateData = {
       name: name.trim(),
       age: age.trim(),
       image: imageUrl,
@@ -98,37 +148,56 @@ const AddPet = () => {
       breed: breed.trim(),
       gender: gender.value,
       vaccinated,
-      isAdopted: false,
-      adoptionStatus: "Available",
+      isAdopted: pet.isAdopted || false,
+      adoptionStatus: pet.adoptionStatus || "Available",
       shortDescription: shortDesc.trim(),
       longDescription: longDesc.trim(),
-      createdAt: now,
       updatedAt: now,
-      addedBy: user.email,
+    
     };
-    try {
-      const response = await axios.post("http://localhost:5000/adoptPet", data);
-      console.log("Pet added successfully:", response.data);
-      Swal.fire({
-        icon: "success",
-        title: "Pet Added Successfully!",
-        text: `${data.name} is now available for adoption.`,
-      });
-    } catch (error) {
-      console.error("Error adding pet:", error.response?.data || error.message);
-    }
+    
 
-    console.log("Submitted pet data:", data);
+    try {
+      const res = await axios.put(
+        `http://localhost:5000/adoptPet/${pet._id}?email=${user.email}`,
+        updateData
+      );
+
+
+      if (res.data.modifiedCount > 0) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated successfully!",
+          timer: 1500,
+          showConfirmButton: false,
+          position: "top-end",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update failed!",
+          text: "No changes were made.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong while updating.",
+      });
+    }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-md shadow-md font-sans">
-      <form onSubmit={handleSubmit} noValidate>
+        <div>
+            <h1>Update {name}</h1>
+        </div>
+      <form onSubmit={handleUpdate} noValidate>
         {/* Image Upload */}
         <div className="mb-6">
-          <label className="block mb-1 font-semibold text-gray-700">
-            Pet Image:
-          </label>
+          <label className="block mb-1 font-semibold text-gray-700">Pet Image:</label>
           <input
             type="file"
             accept="image/*"
@@ -137,36 +206,15 @@ const AddPet = () => {
               errors.image ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {uploading && (
-            <p className="text-sm text-blue-600 mt-1">Uploading...</p>
-          )}
-          {errors.image && (
-            <p className="text-red-500 text-sm mt-1">{errors.image}</p>
-          )}
+          {uploading && <p className="text-sm text-blue-600 mt-1">Uploading...</p>}
+          {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
           {imageUrl && (
-            <p className="text-green-600 text-sm mt-1">
-              Image uploaded successfully
-            </p>
+            <img src={imageUrl} alt="Uploaded" className="h-24 mt-2 rounded-md" />
           )}
         </div>
 
-        {/* Name */}
-        <Input
-          label="Pet Name"
-          value={name}
-          onChange={setName}
-          error={errors.name}
-        />
-
-        {/* Age */}
-        <Input
-          label="Pet Age"
-          value={age}
-          onChange={setAge}
-          error={errors.age}
-        />
-
-        {/* Category */}
+        <Input label="Pet Name" value={name} onChange={setName} error={errors.name} />
+        <Input label="Pet Age" value={age} onChange={setAge} error={errors.age} />
         <SelectField
           label="Pet Category"
           options={categories}
@@ -174,16 +222,7 @@ const AddPet = () => {
           onChange={setCategory}
           error={errors.category}
         />
-
-        {/* Breed */}
-        <Input
-          label="Breed"
-          value={breed}
-          onChange={setBreed}
-          error={errors.breed}
-        />
-
-        {/* Gender */}
+        <Input label="Breed" value={breed} onChange={setBreed} error={errors.breed} />
         <SelectField
           label="Gender"
           options={genders}
@@ -191,16 +230,9 @@ const AddPet = () => {
           onChange={setGender}
           error={errors.gender}
         />
+        <Input label="Location" value={location} onChange={setLocation} error={errors.location} />
 
-        {/* Location */}
-        <Input
-          label="Location"
-          value={location}
-          onChange={setLocation}
-          error={errors.location}
-        />
-
-        {/* Vaccinated */}
+        {/* Vaccinated Checkbox */}
         <div className="mb-5 flex items-center gap-2">
           <input
             type="checkbox"
@@ -214,7 +246,6 @@ const AddPet = () => {
           </label>
         </div>
 
-        {/* Short Desc */}
         <Input
           label="Short Description"
           value={shortDesc}
@@ -222,7 +253,7 @@ const AddPet = () => {
           error={errors.shortDesc}
         />
 
-        {/* Long Desc */}
+        {/* Long Description */}
         <div className="mb-5">
           <label className="block mb-1 font-semibold text-gray-700">
             Long Description:
@@ -235,63 +266,18 @@ const AddPet = () => {
               errors.longDesc ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {errors.longDesc && (
-            <p className="text-red-500 text-sm mt-1">{errors.longDesc}</p>
-          )}
+          {errors.longDesc && <p className="text-red-500 text-sm mt-1">{errors.longDesc}</p>}
         </div>
 
         <button
           type="submit"
           className="w-full py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition"
         >
-          Submit
+          Update Pet
         </button>
       </form>
     </div>
   );
 };
 
-export default AddPet;
-
-// Reusable input field
-const Input = ({ label, value, onChange, error }) => (
-  <div className="mb-5">
-    <label className="block mb-1 font-semibold text-gray-700">{label}:</label>
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 border rounded-md ${
-        error ? "border-red-500" : "border-gray-300"
-      }`}
-    />
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-  </div>
-);
-
-// Reusable react-select field
-const SelectField = ({ label, options, value, onChange, error }) => (
-  <div className="mb-5">
-    <label className="block mb-1 font-semibold text-gray-700">{label}:</label>
-    <div
-      className={`border rounded-md ${
-        error ? "border-red-500" : "border-gray-300"
-      }`}
-    >
-      <Select
-        options={options}
-        value={value}
-        onChange={onChange}
-        placeholder={`Select ${label.toLowerCase()}`}
-        styles={{
-          control: (base) => ({
-            ...base,
-            border: "none",
-            boxShadow: "none",
-          }),
-        }}
-      />
-    </div>
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-  </div>
-);
+export default UpdatePet;
