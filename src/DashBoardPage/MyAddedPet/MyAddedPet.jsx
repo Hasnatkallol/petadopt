@@ -58,6 +58,42 @@ const MyAddedPet = () => {
     });
   };
 
+  const handleAdopt = async (_id) => {
+    const updateData = {
+      isAdopted: true,
+    };
+
+    try {
+      const res = await axios.patch(
+        `http://localhost:5000/adoptPet/${_id}?email=${user.email}`,
+        updateData
+      );
+
+      if (res.data.modifiedCount > 0) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated adopted status true successfully!",
+          timer: 1500,
+          showConfirmButton: false,
+          position: "top-end",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update failed!",
+          text: "No changes were made.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong while updating.",
+      });
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -115,8 +151,16 @@ const MyAddedPet = () => {
             >
               Delete
             </button>
-            <button className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition duration-200 shadow-sm">
-              Adopted
+            <button
+              onClick={() => handleAdopt(row.original._id)}
+              className={`px-3 py-1 rounded-md text-sm transition duration-200 shadow-sm
+    ${
+      row.original.isAdopted
+        ? "bg-gray-400 cursor-not-allowed text-white"
+        : "bg-green-500 hover:bg-green-600 text-white"
+    }`}
+            >
+              {row.original.isAdopted ? "Adopted" : "Adopt"}
             </button>
           </>
         ),
