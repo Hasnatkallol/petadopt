@@ -17,6 +17,9 @@ import MyProfile from "../DashBoardPage/MyProfile/MyProfile";
 import AddPet from "../DashBoardPage/AddPet/AddPet";
 import MyAddedPet from "../DashBoardPage/MyAddedPet/MyAddedPet";
 import UpdatePet from "../DashBoardPage/MyAddedPet/UpdatePet";
+import AdoptionRequest from "../DashBoardPage/AdoptionRequest/AdoptionRequest";
+import CreateDonationCampaign from "../DashBoardPage/CreateDonationCampaign/CreateDonationCampaign";
+import MyDonationCampaign from "../DashBoardPage/MyDonationCampaign/MyDonationCampaign";
 
 export const router = createBrowserRouter([
   {
@@ -105,10 +108,20 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/update/:id",
         loader: ({ params }) =>
-          fetch(
-            `http://localhost:5000/adoptPet/${params.id}`
-          ),
+          fetch(`http://localhost:5000/adoptPet/${params.id}`),
         Component: UpdatePet,
+      },
+      {
+        path: "/dashboard/adoptionRequest",
+        Component: AdoptionRequest,
+      },
+      {
+        path: "/dashboard/createDonationCampaign",
+        Component: CreateDonationCampaign,
+      },
+      {
+        path: "/dashboard/myDonationCampaign",
+        Component: MyDonationCampaign,
       },
     ],
   },

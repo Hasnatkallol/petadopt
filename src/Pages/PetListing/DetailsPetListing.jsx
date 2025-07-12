@@ -15,7 +15,8 @@ const DetailsPetListing = () => {
     gender,
     vaccinated,
     adoptionStatus,
-    longDescription, // <-- added field
+    longDescription, 
+    addedBy
   } = useLoaderData();
 
   const [showModal, setShowModal] = useState(false);
@@ -41,13 +42,14 @@ const DetailsPetListing = () => {
     const phoneNumber = e.target.phone.value;
     const address = e.target.address.value;
     const data = {
-      id: _id,
+      petId: _id,
       name: name,
       image: image,
       userName: user.displayName,
       userEmail: user.email,
       phone: phoneNumber,
       address: address,
+      addedBy: addedBy
     };
     console.log(data);
     try {

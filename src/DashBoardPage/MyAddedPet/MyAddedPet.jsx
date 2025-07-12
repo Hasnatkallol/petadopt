@@ -70,6 +70,13 @@ const MyAddedPet = () => {
       );
 
       if (res.data.modifiedCount > 0) {
+        // Update myPets state to reflect adoption immediately
+        setMyPets((prevPets) =>
+          prevPets.map((pet) =>
+            pet._id === _id ? { ...pet, isAdopted: true } : pet
+          )
+        );
+
         Swal.fire({
           icon: "success",
           title: "Updated adopted status true successfully!",
@@ -153,12 +160,12 @@ const MyAddedPet = () => {
             </button>
             <button
               onClick={() => handleAdopt(row.original._id)}
-              className={`px-3 py-1 rounded-md text-sm transition duration-200 shadow-sm
-    ${
-      row.original.isAdopted
-        ? "bg-gray-400 cursor-not-allowed text-white"
-        : "bg-green-500 hover:bg-green-600 text-white"
-    }`}
+              disabled={row.original.isAdopted}
+              className={`px-3 py-1 rounded-md text-sm transition duration-200 shadow-sm ${
+                row.original.isAdopted
+                  ? "bg-gray-400 cursor-not-allowed text-white"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              }`}
             >
               {row.original.isAdopted ? "Adopted" : "Adopt"}
             </button>
@@ -222,10 +229,7 @@ const MyAddedPet = () => {
                       key={cell.id}
                       className="px-4 sm:px-6 py-4 text-gray-700  align-middle whitespace-nowrap"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
                 </tr>
