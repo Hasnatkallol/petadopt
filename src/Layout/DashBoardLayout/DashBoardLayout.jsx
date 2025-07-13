@@ -5,6 +5,7 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAdmin = true ;
 
   return (
     <div className="h-screen border-1 overflow-hidden flex flex-col">
@@ -31,7 +32,35 @@ const DashboardLayout = () => {
           </div>
           
 
-          <nav className="flex flex-col p-4 gap-4 font-medium text-gray-700">
+         {
+          isAdmin ? 
+            <nav className="flex flex-col p-4 gap-4 font-medium text-gray-700">
+            <NavLink to="/dashboard/adminProfile" className="hover:text-blue-600">
+              Admin Profile
+            </NavLink>
+            <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
+              Add a Pet
+            </NavLink>
+            <NavLink to="/dashboard/myAddedPet" className="hover:text-blue-600">
+              My Added Pets
+            </NavLink>
+            <NavLink to="/dashboard/adoptionRequest" className="hover:text-blue-600">
+              Adoption Request
+            </NavLink>
+            <NavLink to="/dashboard/createDonationCampaign" className="hover:text-blue-600">
+              Create Donation Campaign
+            </NavLink>
+            <NavLink to="/dashboard/myDonationCampaign" className="hover:text-blue-600">
+              My Donation Campaigns
+            </NavLink>
+            <NavLink to="#" className="hover:text-blue-600">
+              My Donations
+            </NavLink>
+             <NavLink to='/' className="hover:text-blue-600">
+              Home
+            </NavLink>
+          </nav> : 
+            <nav className="flex flex-col p-4 gap-4 font-medium text-gray-700">
             <NavLink to="/dashboard/myProfile" className="hover:text-blue-600">
               My Profile
             </NavLink>
@@ -57,6 +86,10 @@ const DashboardLayout = () => {
               Home
             </NavLink>
           </nav>
+         }
+
+
+
         </div>
 
         {/* Main content area */}

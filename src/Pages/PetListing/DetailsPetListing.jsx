@@ -49,7 +49,8 @@ const DetailsPetListing = () => {
       userEmail: user.email,
       phone: phoneNumber,
       address: address,
-      addedBy: addedBy
+      addedBy: addedBy,
+      status: "requested"
     };
     console.log(data);
     try {
