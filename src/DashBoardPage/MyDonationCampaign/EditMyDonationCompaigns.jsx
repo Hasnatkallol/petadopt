@@ -1,13 +1,14 @@
-import React, { useContext, useState } from "react";
-import { useForm } from "react-hook-form";
-import axios from "axios";
-import Select from "react-select";
+import React, { useContext, useEffect, useState } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
+import { useLoaderData } from "react-router";
+import { useForm } from "react-hook-form";
+import { Select } from "@headlessui/react";
+import axios from "axios";
 import Swal from "sweetalert2";
 
-function CreateDonationCampaign() {
-
-  
+const EditMyDonationCompaigns = () => {
+  const { user } = useContext(FirebaseAuthContext);
+  const pet = useLoaderData();
   const {
     register,
     handleSubmit,
@@ -16,13 +17,25 @@ function CreateDonationCampaign() {
     clearErrors,
     formState: { errors },
   } = useForm();
+  useEffect(() => {
+    if (pet) {
+      setValue("petName", pet.petName);
+      setImageUrl(pet.petImage); // So that the preview shows
+      setValue("maximumDonationAmount", pet.maximumDonationAmount);
+      setValue("goal", pet.goal);
+      setValue("category", pet.category);
+      setValue("lastDonationDate", pet.lastDonationDate.split("T")[0]); // Format to YYYY-MM-DD
+      setValue("shortDescription", pet.shortDescription);
+      setValue("longDescription", pet.longDescription);
+    }
+  }, [pet, setValue]);
 
   const categoryOptions = [
     { value: "Dog", label: "Dog" },
     { value: "Cat", label: "Cat" },
     { value: "Rabbit", label: "Rabbit" },
   ];
-  const { user } = useContext(FirebaseAuthContext);
+
   user.email;
 
   const [imageUrl, setImageUrl] = useState("");
@@ -67,7 +80,7 @@ function CreateDonationCampaign() {
     }
   };
 
-  const onSubmit =async (data) => {
+  const onSubmit = async (data) => {
     if (!imageUrl) {
       setError("petImage", { type: "manual", message: "Image is required" });
       return;
@@ -75,7 +88,7 @@ function CreateDonationCampaign() {
     clearErrors("petImage");
 
     // Construct your dataset matching your keys
-    const formData = {
+    const updateData = {
       petName: data.petName,
       petImage: imageUrl,
       maximumDonationAmount: Number(data.maximumDonationAmount),
@@ -90,20 +103,41 @@ function CreateDonationCampaign() {
       createdByEmail: user.email,
     };
 
-    console.log("Form Data:", formData);
-       try {
-      const response = await axios.post("http://localhost:5000/donationPetDb", formData);
-      console.log("Pet added successfully:", response.data);
-      Swal.fire({
-        icon: "success",
-        title: "Pet Added Successfully!",
-        text: `${data.name} is now available for adoption.`,
-      });
+
+        try {
+      const res = await axios.put(
+        `http://localhost:5000/donationPetDb/${pet._id}?email=${user.email}`,
+        updateData
+      );
+
+
+      if (res.data.modifiedCount > 0) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated successfully!",
+          timer: 1500,
+          showConfirmButton: false,
+          position: "top-end",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update failed!",
+          text: "No changes were made.",
+        });
+      }
     } catch (error) {
-      console.error("Error adding pet:", error.response?.data || error.message);
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong while updating.",
+      });
     }
 
-    console.log("Submitted pet data:", data);
+
+
+
   };
 
   return (
@@ -113,7 +147,7 @@ function CreateDonationCampaign() {
         className="bg-white p-8 rounded-2xl shadow-md w-full max-w-lg space-y-6"
       >
         <h2 className="text-2xl font-bold text-gray-800 text-center">
-          Create Donation Campaign
+          Edit Donation Campaign
         </h2>
 
         {/* Image Upload */}
@@ -194,7 +228,7 @@ function CreateDonationCampaign() {
         </div>
 
         {/* goal */}
-       <div>
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Goal
           </label>
@@ -212,9 +246,7 @@ function CreateDonationCampaign() {
             }`}
           />
           {errors.goal && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.goal.message}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.goal.message}</p>
           )}
         </div>
 
@@ -223,18 +255,21 @@ function CreateDonationCampaign() {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Category
           </label>
-          <Select
-            options={categoryOptions}
-            onChange={(selectedOption) => {
-              if (selectedOption) {
-                clearErrors("category");
-                setValue("category", selectedOption.value);
-              }
-            }}
-            className="react-select-container"
-            classNamePrefix="react-select"
-            placeholder="Select a category"
-          />
+          <select
+            {...register("category", { required: "Category is required" })}
+            defaultValue={pet?.category || ""}
+            className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="" disabled>
+              Select a category
+            </option>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
           <input
             type="hidden"
             {...register("category", { required: "Category is required" })}
@@ -322,11 +357,11 @@ function CreateDonationCampaign() {
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
           disabled={uploading}
         >
-          Submit
+          Update
         </button>
       </form>
     </div>
   );
-}
+};
 
-export default CreateDonationCampaign;
+export default EditMyDonationCompaigns;

@@ -14,17 +14,17 @@ const DonationDetails = () => {
     petImage,
     maximumDonationAmount,
     donatedAmount,
-    description,
+    shortDescription,
     category,
     createdAt,
+    longDescription,
+    isPaused,
   } = useLoaderData();
 
   const [showModal, setShowModal] = useState(false);
   const { user } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
   const Pathlocation = useLocation();
-
-  
 
   const handleDonateClick = () => {
     if (!user) {
@@ -59,7 +59,8 @@ const DonationDetails = () => {
           <div className=" space-y-3">
             <h3 className="text-2xl font-semibold text-gray-800">{petName}</h3>
             <p className="text-gray-600 leading-relaxed">
-              {description?.slice(0, 120)}...
+              {/* {description?.slice(0, 120)}... */}
+              {shortDescription}
             </p>
 
             <div className="text-sm text-gray-700 space-y-2">
@@ -79,17 +80,22 @@ const DonationDetails = () => {
                 <span className="font-medium text-gray-800">Goal:</span> $
                 {maximumDonationAmount || "N/A"}
               </p>
+              <p>{longDescription}</p>
             </div>
           </div>
         </div>
 
         <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleDonateClick}
-            className="px-8 py-3 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 hover:scale-105 transition-all duration-300 shadow-md"
-          >
-            Donate Now →
-          </button>
+          {isPaused ? (
+            ""
+          ) : (
+            <button
+              onClick={handleDonateClick}
+              className="px-8 py-3 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 hover:scale-105 transition-all duration-300 shadow-md"
+            >
+              Donate Now →
+            </button>
+          )}
         </div>
       </div>
 
@@ -131,9 +137,9 @@ const DonationDetails = () => {
           </div>
         </Elements>
       )}
-     <div>
+      <div>
         <h1>Recommened campaigns </h1>
-     </div>
+      </div>
     </div>
   );
 };

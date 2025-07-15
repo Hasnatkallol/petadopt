@@ -20,6 +20,7 @@ import UpdatePet from "../DashBoardPage/MyAddedPet/UpdatePet";
 import AdoptionRequest from "../DashBoardPage/AdoptionRequest/AdoptionRequest";
 import CreateDonationCampaign from "../DashBoardPage/CreateDonationCampaign/CreateDonationCampaign";
 import MyDonationCampaign from "../DashBoardPage/MyDonationCampaign/MyDonationCampaign";
+import EditMyDonationCompaigns from "../DashBoardPage/MyDonationCampaign/EditMyDonationCompaigns";
 
 export const router = createBrowserRouter([
   {
@@ -122,6 +123,12 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/myDonationCampaign",
         Component: MyDonationCampaign,
+      },
+      {
+        path: "/dashboard/edit-donation/:id",
+        loader: ({ params }) =>
+          fetch(`http://localhost:5000/donationPetDb/${params.id}`),
+        Component: EditMyDonationCompaigns,
       },
     ],
   },
