@@ -80,12 +80,15 @@ const Register = () => {
         //send to databse
         const userInfo = {
           email: email,
+          name:name,
+          image:profilePic,
           role: "user", // default role
           created_at: new Date().toISOString(),
           last_log_in: new Date().toISOString(),
         };
+        console.log(userInfo)
 
-        // const userResult = await axios.post('/users',userInfo)
+        
         const userResult = await axios.post(
           "http://localhost:5000/users",
           userInfo
@@ -187,7 +190,7 @@ const Register = () => {
 
             <button
               type="submit"
-              className="btn bg-accent text-white w-full mt-2 hover:opacity-90"
+              className="btn bg-accent text-black w-full mt-2 hover:opacity-90"
             >
               Register
             </button>

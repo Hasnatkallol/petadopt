@@ -5,13 +5,13 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isAdmin = true ;
+  const isAdmin = true;
 
   return (
     <div className="h-screen border-1 overflow-hidden flex flex-col">
       {/* Top bar */}
       <div className="flex  justify-between items-center px-6 py-4 border-1 shadow-md bg-white">
-        <span className="text-2xl font-bold text-gray-800">  🐾 PetShop   </span>
+        <span className="text-2xl font-bold text-gray-800"> 🐾 PetShop </span>
 
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -28,17 +28,35 @@ const DashboardLayout = () => {
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="flex items-center justify-between p-4">
-            <span className="text-xl font-semibold text-gray-800">🐾 PetShop </span>
+            <span className="text-xl font-semibold text-gray-800">
+              🐾 PetShop{" "}
+            </span>
           </div>
-          
 
-         {
-          isAdmin ? 
+          {isAdmin ? (
             <nav className="flex flex-col p-4 gap-4 font-medium text-gray-700">
-            <NavLink to="/dashboard/adminProfile" className="hover:text-blue-600">
-              Admin Profile
-            </NavLink>
-            <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
+              <NavLink
+                to="/dashboard/adminProfile"
+                className="hover:text-blue-600"
+              >
+                Admin Profile
+              </NavLink>
+              <NavLink to="/dashboard/users" className="hover:text-blue-600">
+                Users
+              </NavLink>
+              <NavLink to="/dashboard/allpets" className="hover:text-blue-600">
+                All Pets
+              </NavLink>
+              <NavLink
+                to="/dashboard/alldonations"
+                className="hover:text-blue-600"
+              >
+                All Donations
+              </NavLink>
+              <NavLink to="/" className="hover:text-blue-600">
+                Home
+              </NavLink>
+              {/* <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
               Add a Pet
             </NavLink>
             <NavLink to="/dashboard/myAddedPet" className="hover:text-blue-600">
@@ -58,38 +76,54 @@ const DashboardLayout = () => {
             </NavLink>
              <NavLink to='/' className="hover:text-blue-600">
               Home
-            </NavLink>
-          </nav> : 
+            </NavLink> */}
+            </nav>
+          ) : (
             <nav className="flex flex-col p-4 gap-4 font-medium text-gray-700">
-            <NavLink to="/dashboard/myProfile" className="hover:text-blue-600">
-              My Profile
-            </NavLink>
-            <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
-              Add a Pet
-            </NavLink>
-            <NavLink to="/dashboard/myAddedPet" className="hover:text-blue-600">
-              My Added Pets
-            </NavLink>
-            <NavLink to="/dashboard/adoptionRequest" className="hover:text-blue-600">
-              Adoption Request
-            </NavLink>
-            <NavLink to="/dashboard/createDonationCampaign" className="hover:text-blue-600">
-              Create Donation Campaign
-            </NavLink>
-            <NavLink to="/dashboard/myDonationCampaign" className="hover:text-blue-600">
-              My Donation Campaigns
-            </NavLink>
-            <NavLink to="/dashboard/myDonation" className="hover:text-blue-600">
-              My Donations
-            </NavLink>
-             <NavLink to='/' className="hover:text-blue-600">
-              Home
-            </NavLink>
-          </nav>
-         }
-
-
-
+              <NavLink
+                to="/dashboard/myProfile"
+                className="hover:text-blue-600"
+              >
+                My Profile
+              </NavLink>
+              <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
+                Add a Pet
+              </NavLink>
+              <NavLink
+                to="/dashboard/myAddedPet"
+                className="hover:text-blue-600"
+              >
+                My Added Pets
+              </NavLink>
+              <NavLink
+                to="/dashboard/adoptionRequest"
+                className="hover:text-blue-600"
+              >
+                Adoption Request
+              </NavLink>
+              <NavLink
+                to="/dashboard/createDonationCampaign"
+                className="hover:text-blue-600"
+              >
+                Create Donation Campaign
+              </NavLink>
+              <NavLink
+                to="/dashboard/myDonationCampaign"
+                className="hover:text-blue-600"
+              >
+                My Donation Campaigns
+              </NavLink>
+              <NavLink
+                to="/dashboard/myDonation"
+                className="hover:text-blue-600"
+              >
+                My Donations
+              </NavLink>
+              <NavLink to="/" className="hover:text-blue-600">
+                Home
+              </NavLink>
+            </nav>
+          )}
         </div>
 
         {/* Main content area */}
@@ -97,11 +131,9 @@ const DashboardLayout = () => {
           className={`flex-1 border-1 overflow-y-auto bg-gray-50 p-6 transition-all duration-300 `}
         >
           {/* Replace this with your actual content or <Outlet /> */}
-        <Outlet></Outlet>
+          <Outlet></Outlet>
         </main>
       </div>
-
-  
     </div>
   );
 };

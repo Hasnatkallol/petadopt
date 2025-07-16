@@ -22,6 +22,9 @@ import CreateDonationCampaign from "../DashBoardPage/CreateDonationCampaign/Crea
 import MyDonationCampaign from "../DashBoardPage/MyDonationCampaign/MyDonationCampaign";
 import EditMyDonationCompaigns from "../DashBoardPage/MyDonationCampaign/EditMyDonationCompaigns";
 import MyDonation from "../DashBoardPage/MyDonation/MyDonation";
+import Users from "../DashBoardPage/AdminDashBoardPage/Users/Users";
+import AllPets from "../DashBoardPage/AdminDashBoardPage/AllPets/AllPets";
+import AllDonations from "../DashBoardPage/AdminDashBoardPage/ALlDonations/AllDonations";
 
 export const router = createBrowserRouter([
   {
@@ -134,6 +137,18 @@ export const router = createBrowserRouter([
          {
         path: "/dashboard/myDonation",
         Component: MyDonation,
+      },
+           {
+        path: "/dashboard/users",
+        Component: Users,
+      },
+           {
+        path: "/dashboard/allpets",
+        Component: AllPets,
+      },
+           {
+        path: "/dashboard/alldonations",
+        Component: AllDonations,
       },
     ],
   },

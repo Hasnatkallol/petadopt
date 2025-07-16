@@ -15,12 +15,16 @@ const GoogleLogin = () => {
       .then(async (result) => {
         setUser(result.user);
         const user = result.user;
+
         const userInfo = {
+          name:user?.displayName,
+          image:user?.photoURL,
           email: user.email,
           role: "user", // default role
           created_at: new Date().toISOString(),
           last_log_in: new Date().toISOString(),
         };
+        console.log(userInfo)
 
         const userRes = await axios.post(
           "http://localhost:5000/users",
