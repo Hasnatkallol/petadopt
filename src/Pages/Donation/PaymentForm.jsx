@@ -5,11 +5,12 @@ import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
 
-const PaymentForm = ({ id }) => {
+const PaymentForm = ({ id,petName,petImage }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
+ 
 
   const axiosSecure = useAxiosSecure();
   const { user } = useContext(FirebaseAuthContext);
@@ -21,7 +22,7 @@ const PaymentForm = ({ id }) => {
       return res.data;
     },
   });
-  console.log(donationInfo)
+  // console.log(donationInfo)
 
   if (isPending) {
     return <span>Loading...</span>;
@@ -80,6 +81,8 @@ const PaymentForm = ({ id }) => {
         // Save to database
         const paymentData = {
           campaignId: id,
+          petName : petName,
+          petImage: petImage,
           donorEmail: user.email,
           donorName: user.displayName,
           amount: amountInCents,
@@ -87,6 +90,7 @@ const PaymentForm = ({ id }) => {
           paymentMethod: result.paymentIntent.payment_method_types[0],
           date: new Date().toISOString(),
         };
+        console.log(paymentData)
 
         try {
           const saveRes = await axiosSecure.post("/donation", paymentData);

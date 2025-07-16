@@ -87,7 +87,7 @@ const DonationDetails = () => {
 
         <div className="mt-8 flex justify-center">
           {isPaused ? (
-            ''
+            ""
           ) : (
             <button
               onClick={handleDonateClick}
@@ -132,7 +132,7 @@ const DonationDetails = () => {
               </h2>
 
               {/* Mount the form here inside modal */}
-              <PaymentForm id={_id} />
+              <PaymentForm petName={petName} petImage={petImage} id={_id} />
             </div>
           </div>
         </Elements>

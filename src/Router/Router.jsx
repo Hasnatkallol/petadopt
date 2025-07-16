@@ -21,6 +21,7 @@ import AdoptionRequest from "../DashBoardPage/AdoptionRequest/AdoptionRequest";
 import CreateDonationCampaign from "../DashBoardPage/CreateDonationCampaign/CreateDonationCampaign";
 import MyDonationCampaign from "../DashBoardPage/MyDonationCampaign/MyDonationCampaign";
 import EditMyDonationCompaigns from "../DashBoardPage/MyDonationCampaign/EditMyDonationCompaigns";
+import MyDonation from "../DashBoardPage/MyDonation/MyDonation";
 
 export const router = createBrowserRouter([
   {
@@ -129,6 +130,10 @@ export const router = createBrowserRouter([
         loader: ({ params }) =>
           fetch(`http://localhost:5000/donationPetDb/${params.id}`),
         Component: EditMyDonationCompaigns,
+      },
+         {
+        path: "/dashboard/myDonation",
+        Component: MyDonation,
       },
     ],
   },

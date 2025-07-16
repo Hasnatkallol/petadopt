@@ -53,7 +53,7 @@ const DashboardLayout = () => {
             <NavLink to="/dashboard/myDonationCampaign" className="hover:text-blue-600">
               My Donation Campaigns
             </NavLink>
-            <NavLink to="#" className="hover:text-blue-600">
+            <NavLink to="/dashboard/myDonation" className="hover:text-blue-600">
               My Donations
             </NavLink>
              <NavLink to='/' className="hover:text-blue-600">
@@ -79,7 +79,7 @@ const DashboardLayout = () => {
             <NavLink to="/dashboard/myDonationCampaign" className="hover:text-blue-600">
               My Donation Campaigns
             </NavLink>
-            <NavLink to="#" className="hover:text-blue-600">
+            <NavLink to="/dashboard/myDonation" className="hover:text-blue-600">
               My Donations
             </NavLink>
              <NavLink to='/' className="hover:text-blue-600">
