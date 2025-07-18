@@ -3,7 +3,8 @@ import React, { useContext, useEffect } from "react";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 
 const axiosSecure = axios.create({
-  baseURL: `http://localhost:5000/`,
+  baseURL: `http://localhost:5000`,
+  withCredentials: true,
 });
 
 const useAxiosSecure = () => {
@@ -30,28 +31,3 @@ const useAxiosSecure = () => {
 };
 
 export default useAxiosSecure;
-
-
-
-// import axios from 'axios';
-// import React, { useContext } from 'react';
-// import { FirebaseAuthContext } from '../Firebase/FirebaseAuthContext';
-
-// const axiosSecure = axios.create({
-//   baseURL: `http://localhost:5000/`,
-
-// });
-
-// const useAxiosSecure = () => {
-//   const {user} = useContext(FirebaseAuthContext)
-//   axiosSecure.interceptors.request.use(function (config) {
-//     config.headers.Authorization = ` Bearer ${user.accessToken}`
-//     return config;
-//   }, function (error) {
-
-//     return Promise.reject(error);
-//   });
-//     return axiosSecure
-// };
-
-// export default useAxiosSecure;

@@ -10,7 +10,7 @@ const PetListing = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5000/adoptPet");
+        const response = await fetch("http://localhost:5000/adoptPet",{credentials: "include"});
         const data = await response.json();
         setPets(data);
       } catch (error) {
@@ -27,7 +27,9 @@ const PetListing = () => {
   const filteredPets = pets
     .filter((pet) => pet.isAdopted === false)
     .filter((pet) => pet.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter((pet) => (selectedCategory ? pet.category === selectedCategory : true))
+    .filter((pet) =>
+      selectedCategory ? pet.category === selectedCategory : true
+    )
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
@@ -49,7 +51,7 @@ const PetListing = () => {
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-          <option  value="">All Categories</option>
+          <option value="">All Categories</option>
           {categories.map((cat, idx) => (
             <option key={idx} value={cat}>
               {cat}

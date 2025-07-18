@@ -1,9 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FirebaseAuthContext } from "../../../Firebase/FirebaseAuthContext";
 import axios from "axios";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 
 const Users = () => {
   const { user } = useContext(FirebaseAuthContext);
+  console.log(user);
+
+
+  const axiosSecure = useAxiosSecure();
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -12,7 +17,7 @@ const Users = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/users");
+      const response = await axiosSecure.get("/users");
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -21,7 +26,7 @@ const Users = () => {
 
   const handleMakeAdmin = async (id) => {
     try {
-      await axios.patch(`http://localhost:5000/users/${id}`);
+      await axiosSecure.patch(`/users/${id}`);
       fetchUsers(); // Refresh list after update
     } catch (error) {
       console.error("Failed to make admin:", error);
@@ -55,7 +60,9 @@ const Users = () => {
               </td>
               <td className="border p-2">{person.name}</td>
               <td className="border p-2">{person.email}</td>
-              <td className="border p-2 text-center">{person.role || "user"}</td>
+              <td className="border p-2 text-center">
+                {person.role || "user"}
+              </td>
               <td className="border p-2 text-center">
                 {person.role !== "admin" ? (
                   <button

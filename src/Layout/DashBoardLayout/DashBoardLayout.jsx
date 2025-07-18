@@ -2,10 +2,17 @@ import React, { useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { NavLink, Outlet } from "react-router-dom";
+import MyAddedPet from "../../DashBoardPage/MyAddedPet/MyAddedPet";
+import useAdmin from "../../Hooks/useAdmin";
+
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isAdmin = true;
+  const [isAdmin] = useAdmin();
+  console.log(isAdmin)
+
+
+  
 
   return (
     <div className="h-screen border-1 overflow-hidden flex flex-col">
@@ -36,7 +43,7 @@ const DashboardLayout = () => {
           {isAdmin ? (
             <nav className="flex flex-col p-4 gap-4 font-medium text-gray-700">
               <NavLink
-                to="/dashboard/adminProfile"
+                to="/dashboard/adminprofile"
                 className="hover:text-blue-600"
               >
                 Admin Profile
@@ -44,7 +51,7 @@ const DashboardLayout = () => {
               <NavLink to="/dashboard/users" className="hover:text-blue-600">
                 Users
               </NavLink>
-              <NavLink to="/dashboard/allpets" className="hover:text-blue-600">
+              <NavLink to="/dashboard/allpets"  className="hover:text-blue-600">
                 All Pets
               </NavLink>
               <NavLink
@@ -56,6 +63,8 @@ const DashboardLayout = () => {
               <NavLink to="/" className="hover:text-blue-600">
                 Home
               </NavLink>
+
+              
               {/* <NavLink to="/dashboard/addpet" className="hover:text-blue-600">
               Add a Pet
             </NavLink>

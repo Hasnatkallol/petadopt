@@ -4,12 +4,15 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import { FaMoon } from "react-icons/fa";
 import { CiSun } from "react-icons/ci";
+import useAdmin from "../../Hooks/useAdmin";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const [theme, setTheme] = useState("light");
+  const [isAdmin] = useAdmin();
+  console.log(isAdmin)
 
   const { user, logOut } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();

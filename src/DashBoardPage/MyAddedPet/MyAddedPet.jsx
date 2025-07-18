@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
-import axios from "axios";
+
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,24 +10,26 @@ import {
 } from "@tanstack/react-table";
 import Swal from "sweetalert2";
 import { Link } from "react-router";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const MyAddedPet = () => {
   const { user } = useContext(FirebaseAuthContext);
   const [myPets, setMyPets] = useState([]);
   const [errmsg, setErrmsg] = useState("");
   const [sorting, setSorting] = useState([]);
+  const axiosSecure = useAxiosSecure()
 
   useEffect(() => {
     if (!user) return;
     setErrmsg("");
-    axios
-      .get(`http://localhost:5000/adoptPet?email=${user.email}`)
+    axiosSecure
+      .get(`/adoptPet?email=${user.email}`)
       .then((res) => setMyPets(res.data))
       .catch((err) => {
         console.error("Fetch error:", err);
         setErrmsg(err.response?.data?.message || "Something went wrong");
       });
-  }, [user]);
+  }, [user,axiosSecure]);
 
   const handleDelete = (_id) => {
     setErrmsg("");
@@ -41,8 +43,8 @@ const MyAddedPet = () => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:5000/adoptPet/${_id}?email=${user.email}`)
+        axiosSecure
+          .delete(`/adoptPet/${_id}?email=${user.email}`)
           .then((res) => {
             if (res.data.deletedCount) {
               Swal.fire("Deleted!", "Deleted successfully.", "success");
@@ -64,8 +66,8 @@ const MyAddedPet = () => {
     };
 
     try {
-      const res = await axios.patch(
-        `http://localhost:5000/adoptPet/${_id}?email=${user.email}`,
+      const res = await axiosSecure.patch(
+        `/adoptPet/${_id}?email=${user.email}`,
         updateData
       );
 
@@ -229,7 +231,10 @@ const MyAddedPet = () => {
                       key={cell.id}
                       className="px-4 sm:px-6 py-4 text-gray-700  align-middle whitespace-nowrap"
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </td>
                   ))}
                 </tr>

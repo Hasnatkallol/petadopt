@@ -5,13 +5,15 @@ import Swal from "sweetalert2";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 import Lottie from "lottie-react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import axios from "axios";
+
 import GoogleLogin from "./GoogleLogin";
+import useAxiosPublic from "../Hooks/useAxiosPublic";
 
 const Register = () => {
   useEffect(() => {
     document.title = "SignUp";
   }, []);
+  const axiosPublic = useAxiosPublic()
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState(false);
@@ -80,19 +82,15 @@ const Register = () => {
         //send to databse
         const userInfo = {
           email: email,
-          name:name,
-          image:profilePic,
+          name: name,
+          image: profilePic,
           role: "user", // default role
           created_at: new Date().toISOString(),
           last_log_in: new Date().toISOString(),
         };
-        console.log(userInfo)
+        console.log(userInfo);
 
-        
-        const userResult = await axios.post(
-          "http://localhost:5000/users",
-          userInfo
-        );
+        const userResult = await axiosPublic.post("/users", userInfo);
         console.log(userResult);
 
         //Firebase update
@@ -128,7 +126,7 @@ const Register = () => {
     const imagUploadUrl = `https://api.imgbb.com/1/upload?key=${
       import.meta.env.VITE_IMGBBKEY
     }`;
-    const res = await axios.post(imagUploadUrl, formData);
+    const res = await axiosPublic.post(imagUploadUrl, formData);
     setProfilePic(res.data.data.url);
   };
 

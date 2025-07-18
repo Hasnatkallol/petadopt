@@ -25,6 +25,7 @@ import MyDonation from "../DashBoardPage/MyDonation/MyDonation";
 import Users from "../DashBoardPage/AdminDashBoardPage/Users/Users";
 import AllPets from "../DashBoardPage/AdminDashBoardPage/AllPets/AllPets";
 import AllDonations from "../DashBoardPage/AdminDashBoardPage/ALlDonations/AllDonations";
+import AdminProfile from "../DashBoardPage/AdminDashBoardPage/AdminProfile/AdminProfile";
 
 export const router = createBrowserRouter([
   {
@@ -45,8 +46,7 @@ export const router = createBrowserRouter([
       {
         path: "petsListing/:id",
         element: <DetailsPetListing></DetailsPetListing>,
-        loader: ({ params }) =>
-          fetch(`http://localhost:5000/adoptPet/${params.id}`),
+        loader: ({ params }) => fetch(`http://localhost:5000/adoptPet/${params.id}`,{credentials: "include"}),
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
@@ -57,8 +57,7 @@ export const router = createBrowserRouter([
       {
         path: "donations/:id",
         element: <DonationDetails></DonationDetails>,
-        loader: ({ params }) =>
-          fetch(`http://localhost:5000/donationPetDb/${params.id}`),
+        loader: ({ params }) => fetch(`http://localhost:5000/donationPetDb/${params.id}`,{credentials: "include"}),
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
@@ -97,10 +96,19 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        Component: MyProfile,
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+      {
         path: "/dashboard/myProfile",
         Component: MyProfile,
         hydrateFallbackElement: <Loading></Loading>,
       },
+      //   {
+      //   path: "/dashboard/adminprofile",
+      //   Component: <AdminProfile></AdminProfile>,
+      //   hydrateFallbackElement: <Loading></Loading>,
+      // },
 
       {
         path: "/dashboard/addpet",
@@ -112,8 +120,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/dashboard/update/:id",
-        loader: ({ params }) =>
-          fetch(`http://localhost:5000/adoptPet/${params.id}`),
+        loader: ({ params }) => fetch(`http://localhost:5000/adoptPet/${params.id}`,{credentials: "include"}),
         Component: UpdatePet,
       },
       {
@@ -130,23 +137,22 @@ export const router = createBrowserRouter([
       },
       {
         path: "/dashboard/edit-donation/:id",
-        loader: ({ params }) =>
-          fetch(`http://localhost:5000/donationPetDb/${params.id}`),
+        loader: ({ params }) => fetch(`http://localhost:5000/donationPetDb/${params.id}`,{credentials: "include"}),
         Component: EditMyDonationCompaigns,
       },
-         {
+      {
         path: "/dashboard/myDonation",
         Component: MyDonation,
       },
-           {
+      {
         path: "/dashboard/users",
         Component: Users,
       },
-           {
+      {
         path: "/dashboard/allpets",
         Component: AllPets,
       },
-           {
+      {
         path: "/dashboard/alldonations",
         Component: AllDonations,
       },

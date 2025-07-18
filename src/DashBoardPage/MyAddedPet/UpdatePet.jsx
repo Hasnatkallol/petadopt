@@ -1,9 +1,10 @@
 import axios from "axios";
-import React, { useContext,  useState } from "react";
+import React, { useContext, useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import Select from "react-select";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 // Reusable Input component
 const Input = ({ label, value, onChange, error }) => (
@@ -63,6 +64,8 @@ const UpdatePet = () => {
   const { user } = useContext(FirebaseAuthContext);
   const pet = useLoaderData();
 
+  const axiosSecure = useAxiosSecure()
+
   // Initialize state with pet data
   const [name, setName] = useState(pet.name || "");
   const [age, setAge] = useState(pet.age || "");
@@ -106,6 +109,7 @@ const UpdatePet = () => {
       const res = await axios.post(imagUploadUrl, formData);
       setImageUrl(res.data.data.url);
     } catch (err) {
+      console.log(err)
       setErrors((prev) => ({
         ...prev,
         image: "Failed to upload image. Please try again.",
@@ -124,7 +128,8 @@ const UpdatePet = () => {
     if (!breed.trim()) newErrors.breed = "Breed is required";
     if (!gender) newErrors.gender = "Gender is required";
     if (!location.trim()) newErrors.location = "Pet location is required";
-    if (!shortDesc.trim()) newErrors.shortDesc = "Short description is required";
+    if (!shortDesc.trim())
+      newErrors.shortDesc = "Short description is required";
     if (!longDesc.trim()) newErrors.longDesc = "Long description is required";
     if (!imageUrl) newErrors.image = "Pet image is required";
     return newErrors;
@@ -153,16 +158,13 @@ const UpdatePet = () => {
       shortDescription: shortDesc.trim(),
       longDescription: longDesc.trim(),
       updatedAt: now,
-    
     };
-    
 
     try {
-      const res = await axios.put(
-        `http://localhost:5000/adoptPet/${pet._id}?email=${user.email}`,
+      const res = await axiosSecure.put(
+        `/adoptPet/${pet._id}?email=${user.email}`,
         updateData
       );
-
 
       if (res.data.modifiedCount > 0) {
         Swal.fire({
@@ -191,13 +193,15 @@ const UpdatePet = () => {
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-md shadow-md font-sans">
-        <div>
-            <h1>Update {name}</h1>
-        </div>
+      <div>
+        <h1>Update {name}</h1>
+      </div>
       <form onSubmit={handleUpdate} noValidate>
         {/* Image Upload */}
         <div className="mb-6">
-          <label className="block mb-1 font-semibold text-gray-700">Pet Image:</label>
+          <label className="block mb-1 font-semibold text-gray-700">
+            Pet Image:
+          </label>
           <input
             type="file"
             accept="image/*"
@@ -206,15 +210,33 @@ const UpdatePet = () => {
               errors.image ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {uploading && <p className="text-sm text-blue-600 mt-1">Uploading...</p>}
-          {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+          {uploading && (
+            <p className="text-sm text-blue-600 mt-1">Uploading...</p>
+          )}
+          {errors.image && (
+            <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+          )}
           {imageUrl && (
-            <img src={imageUrl} alt="Uploaded" className="h-24 mt-2 rounded-md" />
+            <img
+              src={imageUrl}
+              alt="Uploaded"
+              className="h-24 mt-2 rounded-md"
+            />
           )}
         </div>
 
-        <Input label="Pet Name" value={name} onChange={setName} error={errors.name} />
-        <Input label="Pet Age" value={age} onChange={setAge} error={errors.age} />
+        <Input
+          label="Pet Name"
+          value={name}
+          onChange={setName}
+          error={errors.name}
+        />
+        <Input
+          label="Pet Age"
+          value={age}
+          onChange={setAge}
+          error={errors.age}
+        />
         <SelectField
           label="Pet Category"
           options={categories}
@@ -222,7 +244,12 @@ const UpdatePet = () => {
           onChange={setCategory}
           error={errors.category}
         />
-        <Input label="Breed" value={breed} onChange={setBreed} error={errors.breed} />
+        <Input
+          label="Breed"
+          value={breed}
+          onChange={setBreed}
+          error={errors.breed}
+        />
         <SelectField
           label="Gender"
           options={genders}
@@ -230,7 +257,12 @@ const UpdatePet = () => {
           onChange={setGender}
           error={errors.gender}
         />
-        <Input label="Location" value={location} onChange={setLocation} error={errors.location} />
+        <Input
+          label="Location"
+          value={location}
+          onChange={setLocation}
+          error={errors.location}
+        />
 
         {/* Vaccinated Checkbox */}
         <div className="mb-5 flex items-center gap-2">
@@ -266,7 +298,9 @@ const UpdatePet = () => {
               errors.longDesc ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {errors.longDesc && <p className="text-red-500 text-sm mt-1">{errors.longDesc}</p>}
+          {errors.longDesc && (
+            <p className="text-red-500 text-sm mt-1">{errors.longDesc}</p>
+          )}
         </div>
 
         <button

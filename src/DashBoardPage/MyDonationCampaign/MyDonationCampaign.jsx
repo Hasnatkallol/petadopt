@@ -3,6 +3,7 @@ import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Dialog } from "@headlessui/react";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const MyDonationCampaign = () => {
   const { user } = useContext(FirebaseAuthContext);
@@ -12,18 +13,19 @@ const MyDonationCampaign = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPetName, setModalPetName] = useState("");
   const navigate = useNavigate();
+  const axiosSecure = useAxiosSecure()
 
   useEffect(() => {
     if (!user) return;
     setErrmsg("");
-    axios
-      .get(`http://localhost:5000/donationPetDb?email=${user.email}`)
+    axiosSecure
+      .get(`/donationPetDb?email=${user.email}`)
       .then((res) => setMyPets(res.data))
       .catch((err) => {
         console.error("Fetch error:", err);
         setErrmsg(err.response?.data?.message || "Something went wrong");
       });
-  }, [user]);
+  }, [user,axiosSecure]);
 
   const handleEdit = (id) => {
     navigate(`/dashboard/edit-donation/${id}`);
@@ -31,8 +33,8 @@ const MyDonationCampaign = () => {
 
   const handleViewDonators = (donationId, petName) => {
     setModalPetName(petName);
-    axios
-      .get(`http://localhost:5000/donators?donationId=${donationId}`)
+    axiosSecure
+      .get(`/donators?donationId=${donationId}`)
       .then((res) => {
         setSelectedDonators(res.data);
         setIsModalOpen(true);
@@ -47,7 +49,7 @@ const MyDonationCampaign = () => {
 
   const handleTogglePause = async (id, currentStatus) => {
     try {
-      await axios.patch(`http://localhost:5000/donationPetDb/pause/${id}`, {
+      await axiosSecure.patch(`/donationPetDb/pause/${id}`, {
         isPaused: !currentStatus,
       });
 

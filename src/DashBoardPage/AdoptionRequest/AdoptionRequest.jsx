@@ -1,20 +1,22 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
-import axios from "axios";
+
 import Swal from "sweetalert2";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
 const AdoptionRequest = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { user } = useContext(FirebaseAuthContext);
+  const axiosPublic= useAxiosPublic()
 
   useEffect(() => {
     const fetchAdoptionRequests = async () => {
       try {
         const email = user.email;
-        const response = await axios.get(
-          `http://localhost:5000/requestAdopt?email=${email}`
+        const response = await axiosPublic.get(
+          `/requestAdopt?email=${email}`
         );
         setRequests(response.data);
       } catch (err) {
@@ -37,8 +39,8 @@ const AdoptionRequest = () => {
         id: _id,
       };
 
-      const res = await axios.patch(
-        `http://localhost:5000/adoptPet/${petId}?email=${user.email}`,
+      const res = await axiosPublic.patch(
+        `/adoptPet/${petId}?email=${user.email}`,
         updateData
       );
       console.log(res);
@@ -65,8 +67,8 @@ const AdoptionRequest = () => {
 
   const handleReject = async (_id) => {
     try {
-      const res = await axios.patch(
-        `http://localhost:5000/rejectRequest/${_id}?email=${user.email}`
+      const res = await axiosPublic.patch(
+        `/rejectRequest/${_id}?email=${user.email}`
       );
       console.log(res);
       // Update the state to reflect the change
@@ -124,7 +126,7 @@ const AdoptionRequest = () => {
           >
             <div className="p-6">
               <h2 className="text-xl text-red-600 font-semibold  mb-2">
-                {req?.name} 
+                {req?.name}
               </h2>
 
               <div className="space-y-2 mb-4">

@@ -1,8 +1,11 @@
 import React, { useContext, useState } from "react";
 import Select from "react-select";
-import axios, { Axios } from "axios";
+
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import axios from "axios";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
 const categories = [
   { value: "Dog", label: "Dog" },
@@ -29,6 +32,8 @@ const AddPet = () => {
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
   const { user } = useContext(FirebaseAuthContext);
+  const axiosSecure = useAxiosSecure()
+  const axiosPublic = useAxiosPublic()
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
 
@@ -54,10 +59,10 @@ const AddPet = () => {
       const res = await axios.post(imagUploadUrl, formData);
       setImageUrl(res.data.data.url);
     } catch (err) {
+      console.log(err)
       setErrors((prev) => ({
         ...prev,
         image: "Failed to upload image. Please try again.",
-       
       }));
       setImageUrl("");
     } finally {
@@ -107,7 +112,7 @@ const AddPet = () => {
       addedBy: user.email,
     };
     try {
-      const response = await axios.post("http://localhost:5000/adoptPet", data);
+      const response = await axiosPublic.post("/adoptPet", data);
       console.log("Pet added successfully:", response.data);
       Swal.fire({
         icon: "success",

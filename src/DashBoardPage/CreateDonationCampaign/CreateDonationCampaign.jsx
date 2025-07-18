@@ -4,10 +4,9 @@ import axios from "axios";
 import Select from "react-select";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 function CreateDonationCampaign() {
-
-  
   const {
     register,
     handleSubmit,
@@ -16,6 +15,7 @@ function CreateDonationCampaign() {
     clearErrors,
     formState: { errors },
   } = useForm();
+  const axiosSecure =useAxiosSecure()
 
   const categoryOptions = [
     { value: "Dog", label: "Dog" },
@@ -67,7 +67,7 @@ function CreateDonationCampaign() {
     }
   };
 
-  const onSubmit =async (data) => {
+  const onSubmit = async (data) => {
     if (!imageUrl) {
       setError("petImage", { type: "manual", message: "Image is required" });
       return;
@@ -91,8 +91,8 @@ function CreateDonationCampaign() {
     };
 
     console.log("Form Data:", formData);
-       try {
-      const response = await axios.post("http://localhost:5000/donationPetDb", formData);
+    try {
+      const response = await axiosSecure.post("/donationPetDb", formData);
       console.log("Pet added successfully:", response.data);
       Swal.fire({
         icon: "success",
@@ -194,7 +194,7 @@ function CreateDonationCampaign() {
         </div>
 
         {/* goal */}
-       <div>
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Goal
           </label>
@@ -212,9 +212,7 @@ function CreateDonationCampaign() {
             }`}
           />
           {errors.goal && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.goal.message}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.goal.message}</p>
           )}
         </div>
 

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Select } from "@headlessui/react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const EditMyDonationCompaigns = () => {
   const { user } = useContext(FirebaseAuthContext);
@@ -40,6 +41,7 @@ const EditMyDonationCompaigns = () => {
 
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const axiosSecure = useAxiosSecure()
 
   // Upload image to imgbb and store URL in state
   const handleImageUpload = async (e) => {
@@ -103,13 +105,11 @@ const EditMyDonationCompaigns = () => {
       createdByEmail: user.email,
     };
 
-
-        try {
-      const res = await axios.put(
-        `http://localhost:5000/donationPetDb/${pet._id}?email=${user.email}`,
+    try {
+      const res = await axiosSecure.put(
+        `/donationPetDb/${pet._id}?email=${user.email}`,
         updateData
       );
-
 
       if (res.data.modifiedCount > 0) {
         Swal.fire({
@@ -134,10 +134,6 @@ const EditMyDonationCompaigns = () => {
         text: "Something went wrong while updating.",
       });
     }
-
-
-
-
   };
 
   return (

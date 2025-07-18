@@ -1,16 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import axios from "axios";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const MyDonation = () => {
   const { user } = useContext(FirebaseAuthContext);
   const [donations, setDonations] = useState([]);
+  const axiosSecure = useAxiosSecure()
   useEffect(() => {
     if (!user?.email) return; // <-- safely return if user or email not ready
 
     const fetchDonations = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/donation", {
+        const res = await axiosSecure.get("/donation", {
           params: { email: user.email },
         });
         setDonations(res.data);
@@ -27,7 +29,7 @@ const MyDonation = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://localhost:5000/donation/${id}`);
+      await axiosSecure.delete(`/donation/${id}`);
       setDonations((prev) => prev.filter((donation) => donation._id !== id));
     } catch (error) {
       console.error("Error processing refund:", error);
