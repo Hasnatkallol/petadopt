@@ -25,8 +25,11 @@ import MyDonation from "../DashBoardPage/MyDonation/MyDonation";
 import Users from "../DashBoardPage/AdminDashBoardPage/Users/Users";
 import AllPets from "../DashBoardPage/AdminDashBoardPage/AllPets/AllPets";
 import AllDonations from "../DashBoardPage/AdminDashBoardPage/ALlDonations/AllDonations";
-import AdminProfile from "../DashBoardPage/AdminDashBoardPage/AdminProfile/AdminProfile";
+
 import { User } from "lucide-react";
+import AdminRoute from "../PrivateRoute/AdminRoute";
+import AdminProfile from "../DashBoardPage/AdminProfile/AdminProfile";
+import DashboardHomeRedirect from "../DashBoardPage/DashboardHomeRedirect/DashboardHomeRedirect";
 
 export const router = createBrowserRouter([
   {
@@ -94,11 +97,18 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "dashboard",
+    path: "/dashboard",
     element: <DashBoardLayout></DashBoardLayout>,
     children: [
       {
         index: true,
+        element: (
+          <DashboardHomeRedirect />
+        ),
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+      {
+        path: "myProfile",
         element: (
           <PrivateRoute>
             <MyProfile></MyProfile>
@@ -107,118 +117,28 @@ export const router = createBrowserRouter([
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
-        path: "/dashboard/myProfile",
-                element: (
-          <PrivateRoute>
-          <MyProfile></MyProfile>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-
-      {
-        path: "/dashboard/addpet",
-                element: (
-          <PrivateRoute>
-         <AddPet></AddPet>
-          </PrivateRoute>
+        path: "adminProfile",
+        element: (
+          <AdminRoute>
+            <AdminProfile></AdminProfile>
+          </AdminRoute>
         ),
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
-        path: "/dashboard/myAddedPet",
-                element: (
-          <PrivateRoute>
-          <MyAddedPet></MyAddedPet>
-          </PrivateRoute>
+        path: "users",
+        element: (
+          <AdminRoute>
+            <Users></Users>
+          </AdminRoute>
         ),
         hydrateFallbackElement: <Loading></Loading>,
       },
       {
-        path: "/dashboard/update/:id",
-        loader: ({ params }) =>
-          fetch(`http://localhost:5000/adoptPet/${params.id}`, {
-            credentials: "include",
-          }),
-                element: (
+        path: "addpet",
+        element: (
           <PrivateRoute>
-         <UpdatePet></UpdatePet>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/adoptionRequest",
-                 element: (
-          <PrivateRoute>
-        <AdoptionRequest></AdoptionRequest>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/createDonationCampaign",
-               element: (
-          <PrivateRoute>
-          <CreateDonationCampaign></CreateDonationCampaign>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/myDonationCampaign",
-                 element: (
-          <PrivateRoute>
-          <MyDonationCampaign></MyDonationCampaign>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/edit-donation/:id",
-        loader: ({ params }) =>
-          fetch(`http://localhost:5000/donationPetDb/${params.id}`, {
-            credentials: "include",
-          }),
-               element: (
-          <PrivateRoute>
-         <EditMyDonationCompaigns></EditMyDonationCompaigns>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/myDonation",
-                 element: (
-          <PrivateRoute>
-          <MyDonation></MyDonation>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/users",
-                 element: (
-          <PrivateRoute>
-          <Users></Users>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/allpets",
-                 element: (
-          <PrivateRoute>
-          <AllPets></AllPets>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
-      {
-        path: "/dashboard/alldonations",
-                 element: (
-          <PrivateRoute>
-         <AllDonations></AllDonations>
+            <AddPet></AddPet>
           </PrivateRoute>
         ),
         hydrateFallbackElement: <Loading></Loading>,

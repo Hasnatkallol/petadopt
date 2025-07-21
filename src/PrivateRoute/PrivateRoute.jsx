@@ -3,18 +3,22 @@ import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 import { Navigate, useLocation } from "react-router";
 import Loading from "../Shared/Loading";
 
+
 const PrivateRoute = ({ children }) => {
-  const { user,loading } = useContext(FirebaseAuthContext);
+  const { user, loading } = useContext(FirebaseAuthContext);
   const location = useLocation();
-  // console.log(location);
-  
-  if(loading){
-    return <Loading></Loading>
+   
+
+  if (loading) {
+    return <Loading></Loading>;
   }
-  if (!user) {
-    return <Navigate state={location?.pathname} to='/login'></Navigate>
+
+
+
+  if (user) {
+    return children;
   }
-  return children;
+  return <Navigate state={location?.pathname} to="/login"></Navigate>;
 };
 
 export default PrivateRoute;

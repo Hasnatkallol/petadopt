@@ -1,34 +1,22 @@
-import React from 'react';
-import petVideo from '../../assets/petVideo/petvideo.mp4';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Banner = () => {
   return (
-    <div className="relative h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
-      {/* Video Background */}
-      <video
-        className="absolute inset-0 w-full h-full object-cover"
-        src={petVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
-      />
-
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black/30 backdrop-brightness-75 z-0"></div>
-
-      {/* Centered Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 lg:px-8">
-        <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight drop-shadow-xl">
-          Welcome to Pet Haven
+    <div className=" dark:bg-gray-900 text-black dark:text-white py-16 px-4 lg:px-24 transition-colors duration-300">
+      <div className="max-w-5xl mx-auto text-center">
+        <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-4 text-primary">
+          Welcome to <span>PetShop</span>
         </h1>
-        <p className="text-white text-base sm:text-lg md:text-xl max-w-2xl mb-6 drop-shadow-md">
-          Where every paw has a story. Discover love, care, and companionship with our furry friends.
+        <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8">
+          Discover, adopt, and support our furry friends. Join our mission to help every pet find a loving home.
         </p>
-        {/* Optional CTA button */}
-        <button className="bg-accent text-white font-semibold py-2 px-6 rounded-full shadow-md hover:scale-105 transition duration-300">
-          Explore Now
-        </button>
+        <Link
+          to="/petsListing"
+          className="inline-block bg-accent text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition"
+        >
+          Browse Pets
+        </Link>
       </div>
     </div>
   );

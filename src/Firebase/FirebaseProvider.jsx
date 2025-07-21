@@ -55,7 +55,7 @@ const FirebaseProvider = ({ children }) => {
           //   userEmail: currentUser?.email,
           //   userPhoto: currentUser?.photoURL,
           // };
-
+          setLoading(false)
           // try {
           //   const res = await axiosPublic.post("/users", dbUserInfo);
           //   const data = await res?.data;

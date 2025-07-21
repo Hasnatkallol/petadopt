@@ -5,7 +5,7 @@ import Footer from '../../Shared/Footer';
 
 const MainLayout = () => {
     return (
-        <div>
+        <div className='border-5 w-full '>
             <div>
                 <Navbar></Navbar>
             </div>

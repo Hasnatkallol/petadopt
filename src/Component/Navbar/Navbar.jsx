@@ -1,30 +1,24 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { HiMenu, HiX } from "react-icons/hi";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import { FaMoon } from "react-icons/fa";
 import { CiSun } from "react-icons/ci";
 import useAdmin from "../../Hooks/useAdmin";
+import useTheme from "../../Theme/useTheme";
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
-  const [theme, setTheme] = useState("light");
   const [isAdmin] = useAdmin();
-  console.log(isAdmin)
 
   const { user, logOut } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+  const { theme, toggleTheme } = useTheme(); // 🌗
 
   const toggleMenu = () => setIsOpen(!isOpen);
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
 
   const handleLogout = () => {
     logOut()
@@ -60,7 +54,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="sticky   top-0 z-50 bg-base-200 shadow-md">
+    <div className="sticky top-0 z-50 bg-base-200 shadow-md">
       <div className="w-11/12 mx-auto flex items-center justify-between py-4">
         {/* Mobile: Menu icon */}
         <div className="flex items-center gap-2 lg:hidden">
