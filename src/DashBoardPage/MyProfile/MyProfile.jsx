@@ -4,17 +4,17 @@ import { useNavigate } from "react-router";
 
 const MyProfile = () => {
   const { user } = useContext(FirebaseAuthContext);
-
+ console.log(user)
   const navigate = useNavigate();
   console.log(user);
   if (user.role === "admin") {
     return navigate("adminProfile");
   }
-  console.log(user.role)
+
   return (
     <div>
       <h1>My user Profile is {user?.email}</h1>
-      {/* <img src={user?.photoURL} alt="" /> */}
+      <img src={user?.photoURL} alt="" />
       <h1> My profile</h1>
     </div>
   );

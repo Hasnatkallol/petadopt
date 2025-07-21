@@ -6,7 +6,7 @@ const AdminProfile = () => {
   console.log(user);
   return (
     <div>
-      <h1>My user Profile is {user?.email}</h1>
+      <h1>My admin Profile is {user?.email}</h1>
       <div className="border-1">
         <img src={user?.photoURL} alt="No image" />
       </div>

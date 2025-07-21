@@ -17,7 +17,7 @@ const Users = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axiosSecure.get("/users");
+      const response = await axiosSecure.get(`/users?email=${user?.email}`);
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);

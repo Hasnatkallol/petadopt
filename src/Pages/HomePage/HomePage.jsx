@@ -11,7 +11,6 @@ import Achievements from "../Home/Achievements";
 const HomePage = () => {
   return (
     <div>
-     
       <Banner></Banner>
       <PetsCategory></PetsCategory>
       <CallToAction></CallToAction>

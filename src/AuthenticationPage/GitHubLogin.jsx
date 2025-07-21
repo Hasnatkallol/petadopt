@@ -1,47 +1,71 @@
 import React, { useContext } from "react";
-import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
+
 import Swal from "sweetalert2";
 import { useLocation, useNavigate } from "react-router";
 
+import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 import useAxiosPublic from "../Hooks/useAxiosPublic";
 
-const GoogleLogin = () => {
-  const { setUser, setLoading, signInWithGoogle } =
+
+
+const GitHubLogin = () => {
+  const { setUser, setLoading, signInWithGithub } =
     useContext(FirebaseAuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const axiosPublic = useAxiosPublic();
-  const handleGoogleLogin = () => {
-    signInWithGoogle()
-      .then(async (result) => {
-        setUser(result.user);
-        const user = result.user;
-        console.log("google login user", user);
-        const userInfo = {
-          name: user?.displayName,
-          image: user?.photoURL,
-          email: user?.email,
-          role: "user", // default role
-          created_at: new Date().toISOString(),
-          last_log_in: new Date().toISOString(),
-        };
-        console.log(userInfo);
+  const handleGitHubLogin = () => {
+    setUser(""); // clear user state initially
+    setLoading(true); // start loading
 
-        const userRes = await axiosPublic.post("/users", userInfo);
-        console.log("user update", userRes.data);
+    signInWithGithub()
+      .then(async (result) => {
+        const loggedInUser = result.user;
+        console.log(loggedInUser);
+
+        let email = loggedInUser.email;
+
+        // Fallback for email if not directly available
+        if (!email && loggedInUser?.providerData?.length) {
+          console.log("user email is not directly provided");
+          email = loggedInUser.providerData[0]?.email;
+        }
+
+        if (email) {
+          const userInfo = {
+            name: loggedInUser.displayName,
+            image: loggedInUser.photoURL,
+            email: email,
+            role: "user",
+            created_at: new Date().toISOString(),
+            last_log_in: new Date().toISOString(),
+          };
+
+          try {
+            const userRes = await axiosPublic.post("/users", userInfo);
+            console.log("user update", userRes.data);
+            setUser(loggedInUser);
+          } catch (err) {
+            console.error("Failed to update user:", err);
+            Swal.fire("Error", "Failed to update user info", "error");
+          }
+        }
+
         setLoading(false);
-        Swal.fire("Success!", "Signed in with Google", "success");
+        Swal.fire("Success!", "Signed in with Github", "success");
         navigate(location?.state?.from || "/");
       })
       .catch((error) => {
         console.error(error);
+        setLoading(false);
         Swal.fire("Error", error.message, "error");
       });
   };
+
   return (
     <div>
       <button
-        onClick={handleGoogleLogin}
+        onClick={handleGitHubLogin}
         className="btn bg-white text-black w-full border-[#e5e5e5]"
       >
         <svg
@@ -71,10 +95,10 @@ const GoogleLogin = () => {
             ></path>
           </g>
         </svg>
-        Login with Google
+        Login with GitHub
       </button>
     </div>
   );
 };
 
-export default GoogleLogin;
+export default GitHubLogin;

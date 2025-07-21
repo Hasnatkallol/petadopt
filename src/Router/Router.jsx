@@ -128,8 +128,27 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: (
+          // <AdminRoute>
+          //   <Users></Users>
+          // </AdminRoute>
+          <Users></Users>
+        ),
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+            {
+        path: "allpets",
+        element: (
           <AdminRoute>
-            <Users></Users>
+           <AllPets></AllPets>
+          </AdminRoute>
+        ),
+        hydrateFallbackElement: <Loading></Loading>,
+      },
+            {
+        path: "alldonations",
+        element: (
+          <AdminRoute>
+          <AllDonations></AllDonations>
           </AdminRoute>
         ),
         hydrateFallbackElement: <Loading></Loading>,

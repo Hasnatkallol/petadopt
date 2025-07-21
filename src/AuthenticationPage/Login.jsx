@@ -6,6 +6,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import loginAnimation from "../assets/Login/login.json"; // Only for large screens
 import Lottie from "lottie-react";
 import GoogleLogin from "./GoogleLogin";
+import GitHubLogin from "./GitHubLogin";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -116,6 +117,7 @@ const Login = () => {
           <div className="divider">OR</div>
           <div className="w-full">
             <GoogleLogin ></GoogleLogin>
+            <GitHubLogin></GitHubLogin>
           </div>
 
           {/* Signup link */}

@@ -1,6 +1,7 @@
 import axios from "axios";
-import React, { useContext, useEffect } from "react";
+import React, {  useContext, useEffect } from "react";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
+import { useNavigate } from "react-router";
 
 const axiosSecure = axios.create({
   baseURL: `http://localhost:5000`,
@@ -9,25 +10,52 @@ const axiosSecure = axios.create({
 
 const useAxiosSecure = () => {
   const { user } = useContext(FirebaseAuthContext);
+   const navigate = useNavigate();
+    const { logOut } = useContext(FirebaseAuthContext);
 
-  useEffect(() => {
-    const interceptor = axiosSecure.interceptors.request.use(
-      (config) => {
-        if (user?.accessToken) {
-          config.headers.Authorization = `Bearer ${user.accessToken}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
+        useEffect(() => {
+        axiosSecure.interceptors.response.use(response => {
+            return response;
+        }, err => {
+            console.log('Err from interceptor:', err);
 
-    // Cleanup: Remove interceptor when component unmounts or user changes
-    return () => {
-      axiosSecure.interceptors.request.eject(interceptor);
-    };
-  }, [user]);
+            if(err?.status === 401 || err?.status === 403){
+                logOut()
+                .then(() => {
+                    navigate('/login')
+                }).catch(err => {
+                    alert(err?.message);
+                })
+            }
+    
+            return Promise.reject(err);
+        })
+    }, [logOut, navigate])
+
+  // useEffect(() => {
+  //   const interceptor = axiosSecure.interceptors.request.use(
+  //     (config) => {
+  //       if (user?.accessToken) {
+  //         config.headers.Authorization = `Bearer ${user.accessToken}`;
+  //       }
+  //       return config;
+  //     },
+  //     (error) => Promise.reject(error)
+  //   );
+
+
+  //   return () => {
+  //     axiosSecure.interceptors.request.eject(interceptor);
+  //   };
+  // }, [user]);
 
   return axiosSecure;
 };
 
 export default useAxiosSecure;
+
+
+
+
+
+

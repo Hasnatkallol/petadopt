@@ -1,22 +1,19 @@
 import React, { useContext, useState } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import { HiMenu, HiX } from "react-icons/hi";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
-import { FaMoon } from "react-icons/fa";
-import { CiSun } from "react-icons/ci";
+import Toggle from "../../Theme/Toggle";
 import useAdmin from "../../Hooks/useAdmin";
-import useTheme from "../../Theme/useTheme";
-
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const [isAdmin] = useAdmin();
+  console.log("isAdmin:", isAdmin);
 
-  const { user, logOut } = useContext(FirebaseAuthContext);
+  const { user, logOut, theme, toggleTheme } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme(); // 🌗
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -30,23 +27,35 @@ const Navbar = () => {
       .catch((error) => console.log(error));
   };
 
-  const linkStyle = ({ isActive }) =>
-    isActive ? "text-accent text-xl" : "text-base-content text-xl";
+  const navLinkClasses = ({ isActive }) => {
+    const baseClasses = "text-xl font-medium transition-colors duration-200";
+    if (isActive) {
+      const activeColor =
+        theme === "dark"
+          ? "text-blue-600 underline underline-offset-4 decoration-blue-600"
+          : "text-red-500 underline underline-offset-4 decoration-red-500";
+      return `${baseClasses} ${activeColor}`;
+    } else {
+      return `${baseClasses} ${
+        theme === "dark" ? "text-gray-200" : "text-gray-700"
+      }`;
+    }
+  };
 
   const navLinks = (
     <>
       <li>
-        <NavLink to="/" className={linkStyle}>
+        <NavLink to="/" className={navLinkClasses}>
           Home
         </NavLink>
       </li>
       <li>
-        <NavLink to="/petsListing" className={linkStyle}>
+        <NavLink to="/petsListing" className={navLinkClasses}>
           Pet Listing
         </NavLink>
       </li>
       <li>
-        <NavLink to="/donations" className={linkStyle}>
+        <NavLink to="/donations" className={navLinkClasses}>
           Donation Campaigns
         </NavLink>
       </li>
@@ -54,68 +63,79 @@ const Navbar = () => {
   );
 
   return (
-    <div className="sticky top-0 z-50 bg-base-200 shadow-md">
+    <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
       <div className="w-11/12 mx-auto flex items-center justify-between py-4">
-        {/* Mobile: Menu icon */}
+        {/* Mobile Menu Icon */}
         <div className="flex items-center gap-2 lg:hidden">
           <button onClick={toggleMenu}>
             {isOpen ? <HiX size={28} /> : <HiMenu size={28} />}
           </button>
         </div>
 
-        {/* Mobile: Logo */}
+        {/* Logo */}
         <div className="lg:hidden text-center flex-1">
-          <h1 className="text-accent text-xl font-semibold">
+          <h1 className="text-blue-600 dark:text-red-500 text-xl font-semibold">
             <i>PetShop</i>
           </h1>
         </div>
 
-        {/* Mobile: Theme + Profile/Login */}
+        {/* Mobile: Toggle & Auth */}
         <div className="flex items-center gap-3 lg:hidden relative">
-          <button onClick={toggleTheme}>
-            {theme === "light" ? <FaMoon size={20} /> : <CiSun size={22} />}
-          </button>
+          <Toggle checked={theme === "dark"} onChange={toggleTheme} />
+
           {user ? (
             <img
               src={user.photoURL || "https://i.ibb.co/ZYW3VTp/brown-brim.png"}
               alt="Profile"
               onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-              className="w-9 h-9 rounded-full cursor-pointer border border-accent"
+              className="w-9 h-9 rounded-full cursor-pointer border border-blue-400 dark:border-red-500"
             />
           ) : (
             <button
               onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-              className="bg-gradient-to-r from-[#e0f2ff] via-[#e9e7fc] to-[#f1e7ff] text-black font-semibold py-1 px-3 rounded-xl text-sm shadow-md hover:scale-105 transition"
+              className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 text-black font-semibold py-1 px-3 rounded-xl text-sm shadow-md hover:scale-105 transition"
             >
               Login
             </button>
           )}
 
           {mobileDropdownOpen && (
-            <div className="absolute right-0 top-12 w-44 bg-base-100 shadow-lg rounded-lg z-20">
+            <div className="absolute right-0 top-12 w-44 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-20">
               <div className="flex justify-end px-2 pt-2">
                 <button
                   onClick={() => setMobileDropdownOpen(false)}
-                  className="text-base-content hover:text-error"
+                  className="text-gray-600 dark:text-gray-300 hover:text-red-500"
                 >
                   <HiX size={20} />
                 </button>
               </div>
               <ul className="p-2 space-y-2 text-sm">
-                <li>
-                  <NavLink
-                    to="/dashboard"
-                    className="block px-4 py-2 hover:bg-base-200"
-                    onClick={() => setMobileDropdownOpen(false)}
-                  >
-                    Dashboard
-                  </NavLink>
-                </li>
+                {isAdmin ? (
+                  <li>
+                    <NavLink
+                      to="/dashboard/adminProfile"
+                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setMobileDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </NavLink>
+                  </li>
+                ) : (
+                  <li>
+                    <NavLink
+                      to="/dashboard/myProfile"
+                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setMobileDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </NavLink>
+                  </li>
+                )}
                 {user ? (
                   <li>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 hover:bg-base-200"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Logout
                     </button>
@@ -125,7 +145,7 @@ const Navbar = () => {
                     <NavLink
                       to="/login"
                       onClick={() => setMobileDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-base-200"
+                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Login
                     </NavLink>
@@ -136,29 +156,31 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Desktop Layout */}
+        {/* Desktop */}
         <div className="hidden lg:flex w-full justify-between items-center">
-          <h1 className="text-accent text-2xl font-bold">PetShop</h1>
+          <h1 className="text-blue-600 dark:text-red-500 text-2xl font-bold">
+            PetShop
+          </h1>
           <ul className="flex space-x-6">{navLinks}</ul>
           <div className="flex items-center gap-4">
-            <button onClick={toggleTheme}>
-              {theme === "light" ? <FaMoon size={20} /> : <CiSun size={22} />}
-            </button>
+            <Toggle checked={theme === "dark"} onChange={toggleTheme} />
             {user ? (
               <div className="relative">
                 <img
-                  src={user.photoURL || "https://i.ibb.co/ZYW3VTp/brown-brim.png"}
+                  src={
+                    user.photoURL || "https://i.ibb.co/ZYW3VTp/brown-brim.png"
+                  }
                   alt="Profile"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-10 h-10 rounded-full cursor-pointer border border-accent"
+                  className="w-10 h-10 rounded-full cursor-pointer border border-blue-400 dark:border-red-500"
                 />
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-base-100 shadow-lg rounded-lg z-10">
+                  <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-10">
                     <ul className="p-2 space-y-2 text-sm">
                       <li>
                         <NavLink
                           to="/dashboard"
-                          className="block px-4 py-2 hover:bg-base-200"
+                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setDropdownOpen(false)}
                         >
                           Dashboard
@@ -167,7 +189,7 @@ const Navbar = () => {
                       <li>
                         <button
                           onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 hover:bg-base-200"
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           Logout
                         </button>
@@ -179,7 +201,7 @@ const Navbar = () => {
             ) : (
               <NavLink
                 to="/login"
-                className="bg-gradient-to-r from-[#e0f2ff] via-[#e9e7fc] to-[#f1e7ff] text-black font-semibold py-2 px-4 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition"
+                className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 text-black font-semibold py-2 px-4 rounded-xl shadow-md hover:scale-105 transition"
               >
                 Login
               </NavLink>
@@ -188,9 +210,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Nav Links */}
+      {/* Mobile Nav */}
       {isOpen && (
-        <ul className="flex flex-col items-start bg-base-100 px-4 py-4 space-y-4 lg:hidden">
+        <ul className="flex flex-col items-start bg-white dark:bg-gray-900 px-4 py-4 space-y-4 lg:hidden">
           {navLinks}
         </ul>
       )}

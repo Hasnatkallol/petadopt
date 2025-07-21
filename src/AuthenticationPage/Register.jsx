@@ -126,9 +126,14 @@ const Register = () => {
     const imagUploadUrl = `https://api.imgbb.com/1/upload?key=${
       import.meta.env.VITE_IMGBBKEY
     }`;
-    const res = await axiosPublic.post(imagUploadUrl, formData);
-    setProfilePic(res.data.data.url);
+    
+    const res = await fetch(imagUploadUrl, {body:formData,method:'post'});
+    const data = await res.json()
+    setProfilePic(data.data.url);
+  
   };
+  console.log(profilePic)
+
 
   return (
     <div className="w-11/12 max-w-7xl mx-auto my-10 flex flex-col-reverse md:flex-row items-center gap-8">
