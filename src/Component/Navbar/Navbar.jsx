@@ -1,222 +1,447 @@
 import React, { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { HiMenu, HiX } from "react-icons/hi";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
-import Toggle from "../../Theme/Toggle";
 import useAdmin from "../../Hooks/useAdmin";
+import Logo from "../../Shared/Logo";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Menu,
+  MenuItem,
+  Button,
+  Avatar,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Box,
+  useTheme,
+  Container,
+  Divider,
+  useMediaQuery
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import HomeIcon from "@mui/icons-material/Home";
+import PetsIcon from "@mui/icons-material/Pets";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from "@mui/icons-material/Logout";
+
+const Toggle = ({ checked, onChange, size = "medium" }) => {
+  const sizes = {
+    small: {
+      width: 40,
+      height: 24,
+      ballSize: 16,
+      translateX: 16,
+    },
+    medium: {
+      width: 56,
+      height: 32,
+      ballSize: 24,
+      translateX: 24,
+    }
+  };
+
+  const { width, height, ballSize, translateX } = sizes[size];
+
+  return (
+    <label 
+      className="relative inline-flex items-center cursor-pointer"
+      style={{ 
+        width: `${width}px`,
+        height: `${height}px`,
+        margin: "0 4px"
+      }}
+    >
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={checked}
+        onChange={onChange}
+      />
+      <div
+        className={`absolute inset-0 rounded-full transition-colors duration-300`}
+        style={{ 
+          backgroundColor: checked ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+        }}
+      />
+      <div
+        className={`absolute rounded-full shadow-md transition-transform duration-300 bg-white`}
+        style={{
+          width: `${ballSize}px`,
+          height: `${ballSize}px`,
+          left: "4px",
+          top: "50%",
+          transform: checked ? `translateX(${translateX}px) translateY(-50%)` : "translateX(0) translateY(-50%)",
+        }}
+      />
+    </label>
+  );
+};
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
   const [isAdmin] = useAdmin();
-  console.log("isAdmin:", isAdmin);
-
   const { user, logOut, theme, toggleTheme } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleLogout = () => {
     logOut()
       .then(() => {
-        setDropdownOpen(false);
-        setMobileDropdownOpen(false);
+        handleMenuClose();
+        setDrawerOpen(false);
         navigate("/");
       })
       .catch((error) => console.log(error));
   };
 
-  const navLinkClasses = ({ isActive }) => {
-    const baseClasses = "text-xl font-medium transition-colors duration-200";
-    if (isActive) {
-      const activeColor =
-        theme === "dark"
-          ? "text-blue-600 underline underline-offset-4 decoration-blue-600"
-          : "text-red-500 underline underline-offset-4 decoration-red-500";
-      return `${baseClasses} ${activeColor}`;
-    } else {
-      return `${baseClasses} ${
-        theme === "dark" ? "text-gray-200" : "text-gray-700"
-      }`;
-    }
-  };
+  const navLinkStyle = ({ isActive }) => ({
+    textDecoration: "none",
+    color: isActive 
+      ? theme === "dark" ? "#60A5FA" : "#FBAE02"
+      : theme === "dark" ? "#CBD5E1" : "#1E293B",
+    fontWeight: isActive ? 600 : 500,
+    fontSize: "1rem",
+    padding: "0.5rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+  });
 
-  const navLinks = (
-    <>
-      <li>
-        <NavLink to="/" className={navLinkClasses}>
-          Home
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/petsListing" className={navLinkClasses}>
-          Pet Listing
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to="/donations" className={navLinkClasses}>
-          Donation Campaigns
-        </NavLink>
-      </li>
-    </>
-  );
+  const navLinks = [
+    { path: "/", label: "Home", icon: <HomeIcon fontSize="small" /> },
+    { path: "/petsListing", label: "Pet Listing", icon: <PetsIcon fontSize="small" /> },
+    { path: "/donations", label: "Donation Campaigns", icon: <VolunteerActivismIcon fontSize="small" /> },
+  ];
 
   return (
-    <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
-      <div className="w-11/12 mx-auto flex items-center justify-between py-4">
-        {/* Mobile Menu Icon */}
-        <div className="flex items-center gap-2 lg:hidden">
-          <button onClick={toggleMenu}>
-            {isOpen ? <HiX size={28} /> : <HiMenu size={28} />}
-          </button>
-        </div>
-
-        {/* Logo */}
-        <div className="lg:hidden text-center flex-1">
-          <h1 className="text-blue-600 dark:text-red-500 text-xl font-semibold">
-            <i>PetShop</i>
-          </h1>
-        </div>
-
-        {/* Mobile: Toggle & Auth */}
-        <div className="flex items-center gap-3 lg:hidden relative">
-          <Toggle checked={theme === "dark"} onChange={toggleTheme} />
-
-          {user ? (
-            <img
-              src={user.photoURL || "https://i.ibb.co/ZYW3VTp/brown-brim.png"}
-              alt="Profile"
-              onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-              className="w-9 h-9 rounded-full cursor-pointer border border-blue-400 dark:border-red-500"
-            />
-          ) : (
-            <button
-              onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-              className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 text-black font-semibold py-1 px-3 rounded-xl text-sm shadow-md hover:scale-105 transition"
+    <AppBar
+      position="fixed"
+      elevation={0}
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bgcolor: theme === "dark" ? "#0F172A" : "#FFFFFF",
+        color: theme === "dark" ? "#F8FAFC" : "#1E293B",
+        borderBottom: "1px solid",
+        borderColor: theme === "dark" ? "#1E293B" : "#E2E8F0",
+        zIndex: 1200,
+      }}
+    >
+      <Container maxWidth={false} sx={{ width: "91.666667%" }}>
+        <Toolbar sx={{ 
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: { xs: "0.25rem 0", md: "0.5rem 0" },
+          gap: { xs: 0, sm: 1 },
+          minHeight: "64px !important",
+        }}>
+          {/* Left side - Menu button and Logo */}
+          <Box sx={{ 
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            flexShrink: 0,
+            minWidth: 0,
+          }}>
+            <IconButton 
+              edge="start" 
+              color="inherit" 
+              onClick={() => setDrawerOpen(true)} 
+              sx={{ 
+                display: { lg: "none" },
+                padding: "8px",
+                marginRight: "4px",
+              }}
             >
-              Login
-            </button>
-          )}
+              <MenuIcon />
+            </IconButton>
+            <Logo />
+          </Box>
 
-          {mobileDropdownOpen && (
-            <div className="absolute right-0 top-12 w-44 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-20">
-              <div className="flex justify-end px-2 pt-2">
-                <button
-                  onClick={() => setMobileDropdownOpen(false)}
-                  className="text-gray-600 dark:text-gray-300 hover:text-red-500"
-                >
-                  <HiX size={20} />
-                </button>
-              </div>
-              <ul className="p-2 space-y-2 text-sm">
-                {isAdmin ? (
-                  <li>
-                    <NavLink
-                      to="/dashboard/adminProfile"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => setMobileDropdownOpen(false)}
-                    >
-                      Dashboard
-                    </NavLink>
-                  </li>
-                ) : (
-                  <li>
-                    <NavLink
-                      to="/dashboard/myProfile"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => setMobileDropdownOpen(false)}
-                    >
-                      Dashboard
-                    </NavLink>
-                  </li>
-                )}
-                {user ? (
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                ) : (
-                  <li>
-                    <NavLink
-                      to="/login"
-                      onClick={() => setMobileDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Login
-                    </NavLink>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
-        </div>
+          {/* Center - Desktop Navigation */}
+          <Box 
+            sx={{ 
+              display: { xs: "none", lg: "flex" }, 
+              justifyContent: "center",
+              flexGrow: 1,
+              gap: 1,
+              mx: 2,
+            }}
+          >
+            {navLinks.map((link) => (
+              <NavLink 
+                key={link.path} 
+                to={link.path} 
+                style={navLinkStyle}
+              >
+                {link.icon}
+                {link.label}
+              </NavLink>
+            ))}
+          </Box>
 
-        {/* Desktop */}
-        <div className="hidden lg:flex w-full justify-between items-center">
-          <h1 className="text-blue-600 dark:text-red-500 text-2xl font-bold">
-            PetShop
-          </h1>
-          <ul className="flex space-x-6">{navLinks}</ul>
-          <div className="flex items-center gap-4">
-            <Toggle checked={theme === "dark"} onChange={toggleTheme} />
+          {/* Right side - Toggle and User/Auth */}
+          <Box 
+            sx={{ 
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexShrink: 0,
+            }}
+          >
+            <Toggle 
+              checked={theme === "dark"} 
+              onChange={toggleTheme}
+              size={isMobile ? "small" : "medium"}
+            />
+            
             {user ? (
-              <div className="relative">
-                <img
-                  src={
-                    user.photoURL || "https://i.ibb.co/ZYW3VTp/brown-brim.png"
-                  }
-                  alt="Profile"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-10 h-10 rounded-full cursor-pointer border border-blue-400 dark:border-red-500"
+              <>
+                <Avatar
+                  src={user.photoURL || "https://i.ibb.co/ZYW3VTp/brown-brim.png"}
+                  onClick={handleMenuOpen}
+                  sx={{ 
+                    cursor: "pointer", 
+                    border: `2px solid ${theme === "dark" ? "#FBAE02" : "#4EA8FF"}`,
+                    width: 36,
+                    height: 36,
+                  }}
                 />
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-10">
-                    <ul className="p-2 space-y-2 text-sm">
-                      <li>
-                        <NavLink
-                          to="/dashboard"
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setDropdownOpen(false)}
-                        >
-                          Dashboard
-                        </NavLink>
-                      </li>
-                      <li>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          Logout
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </div>
+                <Menu 
+                  anchorEl={anchorEl} 
+                  open={open} 
+                  onClose={handleMenuClose}
+                  PaperProps={{
+                    sx: {
+                      bgcolor: theme === "dark" ? "#1E293B" : "#fff",
+                      color: theme === "dark" ? "#fff" : "#1E293B",
+                      mt: 1,
+                      '& .MuiMenuItem-root': {
+                        gap: 1.5,
+                        '&:hover': {
+                          bgcolor: theme === "dark" ? "#334155" : "#F1F5F9"
+                        }
+                      }
+                    }
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      navigate(isAdmin ? "/dashboard/adminProfile" : "/dashboard/myProfile");
+                      handleMenuClose();
+                    }}
+                  >
+                    <DashboardIcon fontSize="small" />
+                    Dashboard
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <LogoutIcon fontSize="small" />
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </>
             ) : (
-              <NavLink
-                to="/login"
-                className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 text-black font-semibold py-2 px-4 rounded-xl shadow-md hover:scale-105 transition"
+              <Button
+                onClick={() => navigate("/login")}
+                variant="contained"
+                startIcon={<LoginIcon />}
+                sx={{ 
+                  bgcolor: "#FBAE02", 
+                  color: "#000", 
+                  fontWeight: "bold", 
+                  '&:hover': { bgcolor: "#e09e00" },
+                  whiteSpace: "nowrap",
+                  padding: { xs: "6px 8px", sm: "8px 16px" },
+                  minWidth: "fit-content",
+                }}
+              >
+                {isMobile ? <LoginIcon fontSize="small" /> : "Login"}
+              </Button>
+            )}
+          </Box>
+        </Toolbar>
+      </Container>
+
+      {/* Mobile Drawer */}
+      <Drawer 
+        anchor="left" 
+        open={drawerOpen} 
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: theme === "dark" ? "#0F172A" : "#fff",
+            color: theme === "dark" ? "#F8FAFC" : "#1E293B",
+            width: 280
+          }
+        }}
+      >
+        <Box sx={{ 
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          padding: "0.5rem",
+        }}>
+          {/* Header with close button */}
+          <Box sx={{ 
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "0.75rem",
+          }}>
+            <Logo />
+            <IconButton 
+              onClick={() => setDrawerOpen(false)}
+              sx={{ 
+                padding: "8px",
+                color: "#000000" // White color for close icon
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          
+          <Divider sx={{ borderColor: theme === "dark" ? "#334155" : "#E2E8F0" }} />
+
+          {/* Navigation Links */}
+          <List sx={{ 
+            flexGrow: 1, 
+            padding: "0.5rem",
+            '& .MuiListItem-root': {
+              padding: "8px 12px",
+              marginBottom: "0px" // Remove gap after Donation Campaigns
+            }
+          }}>
+            {navLinks.map((link) => (
+              <ListItem 
+                key={link.path} 
+                button 
+                component={NavLink} 
+                to={link.path} 
+                onClick={() => setDrawerOpen(false)}
+                sx={{
+                  borderRadius: "4px",
+                  color: theme === "dark" ? "#CBD5E1" : "#1E293B",
+                  '&.active': {
+                    color: theme === "dark" ? "#60A5FA" : "#FBAE02",
+                    '& .MuiListItemIcon-root': {
+                      color: theme === "dark" ? "#60A5FA" : "#FBAE02"
+                    }
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ 
+                  color: "inherit",
+                  minWidth: "36px"
+                }}>
+                  {link.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={link.label} 
+                  primaryTypographyProps={{ 
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+
+          {/* Footer with Auth options */}
+          <Box sx={{ padding: "0.75rem", marginTop: "auto" }}>
+            {user ? (
+              <>
+                <ListItem 
+                  button 
+                  onClick={() => {
+                    navigate(isAdmin ? "/dashboard/adminProfile" : "/dashboard/myProfile");
+                    setDrawerOpen(false);
+                  }}
+                  sx={{
+                    borderRadius: "4px",
+                    color: theme === "dark" ? "#CBD5E1" : "#1E293B",
+                  }}
+                >
+                  <ListItemIcon sx={{ 
+                    color: "inherit",
+                    minWidth: "36px"
+                  }}>
+                    <DashboardIcon />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Dashboard" 
+                    primaryTypographyProps={{ 
+                      fontWeight: 500,
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </ListItem>
+                <ListItem 
+                  button 
+                  onClick={handleLogout}
+                  sx={{
+                    borderRadius: "4px",
+                    color: theme === "dark" ? "#CBD5E1" : "#1E293B",
+                  }}
+                >
+                  <ListItemIcon sx={{ 
+                    color: "inherit",
+                    minWidth: "36px"
+                  }}>
+                    <LogoutIcon />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Logout" 
+                    primaryTypographyProps={{ 
+                      fontWeight: 500,
+                      fontSize: "0.95rem",
+                    }}
+                  />
+                </ListItem>
+              </>
+            ) : (
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<LoginIcon />}
+                onClick={() => {
+                  navigate("/login");
+                  setDrawerOpen(false);
+                }}
+                sx={{ 
+                  bgcolor: "#FBAE02", 
+                  color: "#000", 
+                  fontWeight: "bold", 
+                  '&:hover': { bgcolor: "#e09e00" },
+                }}
               >
                 Login
-              </NavLink>
+              </Button>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Nav */}
-      {isOpen && (
-        <ul className="flex flex-col items-start bg-white dark:bg-gray-900 px-4 py-4 space-y-4 lg:hidden">
-          {navLinks}
-        </ul>
-      )}
-    </div>
+          </Box>
+        </Box>
+      </Drawer>
+    </AppBar>
   );
 };
 

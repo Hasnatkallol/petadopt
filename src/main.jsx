@@ -11,14 +11,10 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-   
-      
-        <QueryClientProvider client={queryClient}>
-          <FirebaseProvider>
-            <RouterProvider router={router} />
-          </FirebaseProvider>
-        </QueryClientProvider>
-   
-
+    <QueryClientProvider client={queryClient}>
+      <FirebaseProvider>
+        <RouterProvider router={router} />
+      </FirebaseProvider>
+    </QueryClientProvider>
   </StrictMode>
 );

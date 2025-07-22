@@ -1,20 +1,12 @@
-import flowbite from 'flowbite/plugin';
-import lightswind from 'lightswind/plugin';
-
-export default {
-  darkMode: 'media',
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}",
-    "./node_modules/flowbite-react/**/*.js",
-    "./node_modules/flowbite/**/*.js",
-    "./node_modules/lightswind/**/*.js", 
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/flowbite/**/*.js", // add this line
   ],
   theme: {
     extend: {},
   },
   plugins: [
-    flowbite,
-    lightswind,
+    require('flowbite/plugin') // add this plugin
   ],
 };
