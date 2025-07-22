@@ -80,15 +80,7 @@ export const router = createBrowserRouter([
         Component: Register,
         hydrateFallbackElement: <Loading></Loading>,
       },
-      {
-        path: "about",
-        element: (
-          <PrivateRoute>
-            <AboutPage></AboutPage>
-          </PrivateRoute>
-        ),
-        hydrateFallbackElement: <Loading></Loading>,
-      },
+
       {
         path: "mydonationdampaigns",
         Component: MyDonationCampaigns,

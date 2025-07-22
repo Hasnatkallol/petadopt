@@ -1,12 +1,6 @@
 import React, { useContext, useState } from "react";
-import {
-  useLoaderData,
-  useLocation,
-  useNavigate,
- 
-} from "react-router";
+import { useLoaderData, useLocation, useNavigate } from "react-router";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
-
 import Swal from "sweetalert2";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
@@ -24,14 +18,12 @@ const DetailsPetListing = () => {
     longDescription,
     addedBy,
   } = useLoaderData();
-  const axiosPublic = useAxiosPublic()
+  const axiosPublic = useAxiosPublic();
 
   const [showModal, setShowModal] = useState(false);
-  const { user } = useContext(FirebaseAuthContext);
+  const { user, theme } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
   const Pathlocation = useLocation();
-
-
 
   const handleAdoptClick = () => {
     if (!user) {
@@ -85,142 +77,180 @@ const DetailsPetListing = () => {
     }
   };
 
+  // Theme-based color classes
+  const themeClasses = {
+    light: {
+      bg: "bg-gradient-to-br from-gray-50 to-gray-100",
+      text: "text-gray-800",
+      card: "bg-white",
+      cardText: "text-gray-600",
+      accent: "text-orange-500",
+      modalBg: "bg-white",
+      modalText: "text-gray-800",
+      inputBg: "bg-white",
+      inputBorder: "border-gray-300",
+      inputText: "text-gray-700",
+      disabledInput: "bg-gray-100 text-gray-600"
+    },
+    dark: {
+      bg: "bg-gradient-to-br from-gray-900 to-gray-800",
+      text: "text-gray-100",
+      card: "bg-gray-800",
+      cardText: "text-gray-300",
+      accent: "text-orange-400",
+      modalBg: "bg-gray-800",
+      modalText: "text-gray-100",
+      inputBg: "bg-gray-700",
+      inputBorder: "border-gray-600",
+      inputText: "text-gray-100",
+      disabledInput: "bg-gray-700 text-gray-300"
+    }
+  };
+
+  const currentTheme = themeClasses[theme] || themeClasses.light;
+
   return (
-    <div className="min-h-50 flex flex-col gap-10 lg:gap-0 md:flex-row items-center justify-center bg-gray-50 px-4 py-10">
+    <div className={`min-h-screen flex flex-col lg:flex-row items-center justify-center ${currentTheme.bg} px-4 py-12 sm:px-6 lg:px-8`}>
       {/* Image Section */}
-      <div className="w-full md:w-1/2 mb-8 md:mb-0">
-        <img
-          src={image}
-          alt={name}
-          className="rounded-xl shadow-lg w-full max-w-md mx-auto"
-        />
+      <div className="w-full lg:w-1/2 mb-10 lg:mb-0 lg:pr-8 flex justify-center">
+        <div className="max-w-md w-full">
+          <img
+            src={image}
+            alt={name}
+            className="rounded-xl shadow-xl w-full h-auto object-cover"
+          />
+        </div>
       </div>
 
       {/* Details Section */}
-      <div className="w-full md:w-1/2 max-w-xl space-y-6 text-gray-800">
-        <h1 className="text-4xl font-bold">
+      <div className={`w-full lg:w-1/2 max-w-2xl space-y-6 ${currentTheme.text} px-4 sm:px-0`}>
+        <h1 className="text-3xl sm:text-4xl font-bold">
           Meet{" "}
-          <span className="text-orange-500 underline underline-offset-4">
+          <span className={`${currentTheme.accent} underline underline-offset-4`}>
             {name}
           </span>
         </h1>
 
-        <div className="grid grid-cols-2 gap-y-3 text-base">
-          <p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
+          <p className={`${currentTheme.card} p-3 rounded-lg shadow ${currentTheme.cardText}`}>
             <span className="font-semibold">Gender:</span> {gender}
           </p>
-          <p>
+          <p className={`${currentTheme.card} p-3 rounded-lg shadow ${currentTheme.cardText}`}>
             <span className="font-semibold">Breed:</span> {breed}
           </p>
-          <p>
+          <p className={`${currentTheme.card} p-3 rounded-lg shadow ${currentTheme.cardText}`}>
             <span className="font-semibold">Age:</span> {age}
           </p>
-          <p>
-            <span className="font-semibold">Vaccinated:</span>{" "}
-            {vaccinated ? "Yes" : "No"}
+          <p className={`${currentTheme.card} p-3 rounded-lg shadow ${currentTheme.cardText}`}>
+            <span className="font-semibold">Vaccinated:</span> {vaccinated ? "Yes" : "No"}
           </p>
-          <p>
+          <p className={`${currentTheme.card} p-3 rounded-lg shadow ${currentTheme.cardText}`}>
             <span className="font-semibold">Location:</span> {location}
           </p>
-          <p>
+          <p className={`${currentTheme.card} p-3 rounded-lg shadow ${currentTheme.cardText}`}>
             <span className="font-semibold">Status:</span> {adoptionStatus}
           </p>
         </div>
 
-        <p className="text-gray-600 leading-relaxed">{longDescription}</p>
+        <p className={`${currentTheme.cardText} leading-relaxed ${currentTheme.card} p-4 rounded-lg shadow`}>
+          {longDescription}
+        </p>
 
         <button
           onClick={handleAdoptClick}
-          className="px-6 py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition duration-300"
+          className="px-8 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
         >
-          Adopt→
+          Adopt {name} →
         </button>
       </div>
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-          <div className="relative flex flex-col items-center max-w-lg w-full gap-4 p-6 rounded-md shadow-md sm:py-8 sm:px-12 bg-white text-gray-800">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
+          <div className={`relative max-w-md w-full ${currentTheme.modalBg} ${currentTheme.modalText} rounded-xl shadow-2xl p-6 sm:p-8`}>
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-600 hover:text-red-500"
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 512 512"
-                fill="currentColor"
-                className="w-6 h-6"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <polygon points="427.314 107.313 404.686 84.687 256 233.373 107.314 84.687 84.686 107.313 233.373 256 84.686 404.687 107.314 427.313 256 278.627 404.686 427.313 427.314 404.687 278.627 256 427.314 107.313"></polygon>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <img
-              src={image}
-              alt={name}
-              className="w-32 h-32 object-cover rounded-full border"
-            />
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src={image}
+                alt={name}
+                className="w-24 h-24 object-cover rounded-full border-4 border-white dark:border-gray-700 shadow-md"
+              />
+              <h2 className="text-xl font-bold mt-4 text-center">
+                Adopt {name}
+              </h2>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Pet ID: {_id}
+              </div>
+            </div>
 
-            <h2 className="text-2xl font-semibold text-center">
-              Confirm Your Interest in Adopting {name}
-            </h2>
-
-            <div className="text-sm text-gray-500 mb-2">Pet ID: {_id}</div>
-
-            <form
-              className="w-full flex flex-col gap-4"
-              onSubmit={handleSubmit}
-            >
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${currentTheme.inputText} mb-1`}>
                   Name
                 </label>
                 <input
                   type="text"
                   value={user.displayName}
                   disabled
-                  className="w-full px-3 py-2 mt-1 border rounded-md bg-gray-100 text-gray-600"
+                  className={`w-full px-4 py-2 rounded-lg ${currentTheme.disabledInput} border-none`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${currentTheme.inputText} mb-1`}>
                   Email
                 </label>
                 <input
                   type="email"
                   value={user.email}
                   disabled
-                  className="w-full px-3 py-2 mt-1 border rounded-md bg-gray-100 text-gray-600"
+                  className={`w-full px-4 py-2 rounded-lg ${currentTheme.disabledInput} border-none`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
+                <label className={`block text-sm font-medium ${currentTheme.inputText} mb-1`}>
+                  Phone Number *
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   required
-                  className="w-full px-3 py-2 mt-1 border rounded-md"
+                  className={`w-full px-4 py-2 rounded-lg border ${currentTheme.inputBorder} ${currentTheme.inputBg} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="+880 1234 567890"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Address
+                <label className={`block text-sm font-medium ${currentTheme.inputText} mb-1`}>
+                  Address *
                 </label>
                 <textarea
                   required
                   name="address"
-                  className="w-full px-3 py-2 mt-1 border rounded-md"
+                  rows={3}
+                  className={`w-full px-4 py-2 rounded-lg border ${currentTheme.inputBorder} ${currentTheme.inputBg} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="Enter your full address"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full px-4 py-2 mt-4 font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700"
+                className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg shadow hover:shadow-md transition-all"
               >
                 Submit Adoption Request
               </button>

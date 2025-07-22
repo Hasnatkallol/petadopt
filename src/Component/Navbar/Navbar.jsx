@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import useAdmin from "../../Hooks/useAdmin";
 import Logo from "../../Shared/Logo";
+import footerLogo from "../../assets/Footer/logo.png";
 import {
   AppBar,
   Toolbar,
@@ -176,7 +177,17 @@ const Navbar = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Logo />
+            <Box onClick={() => navigate("/")} sx={{ cursor: "pointer" }}>
+              {theme === "dark" ? (
+                <img 
+                  src={footerLogo} 
+                  alt="Dark Logo" 
+                  style={{ height: "40px" }}
+                />
+              ) : (
+                <Logo />
+              )}
+            </Box>
           </Box>
 
           {/* Center - Desktop Navigation */}
@@ -262,22 +273,26 @@ const Navbar = () => {
                 </Menu>
               </>
             ) : (
-              <Button
-                onClick={() => navigate("/login")}
-                variant="contained"
-                startIcon={<LoginIcon />}
-                sx={{ 
-                  bgcolor: "#FBAE02", 
-                  color: "#000", 
-                  fontWeight: "bold", 
-                  '&:hover': { bgcolor: "#e09e00" },
-                  whiteSpace: "nowrap",
-                  padding: { xs: "6px 8px", sm: "8px 16px" },
-                  minWidth: "fit-content",
-                }}
-              >
-                {isMobile ? <LoginIcon fontSize="small" /> : "Login"}
-              </Button>
+              !drawerOpen && (
+                <Button
+                  onClick={() => navigate("/login")}
+                  variant="contained"
+                  startIcon={<LoginIcon />}
+                  sx={{ 
+                    bgcolor: theme === "dark" ? "#60A5FA" : "#FBAE02",
+                    color: theme === "dark" ? "#fff" : "#000",
+                    fontWeight: "bold", 
+                    '&:hover': {
+                      bgcolor: theme === "dark" ? "#3B82F6" : "#e09e00"
+                    },
+                    whiteSpace: "nowrap",
+                    padding: { xs: "6px 8px", sm: "8px 16px" },
+                    minWidth: "fit-content",
+                  }}
+                >
+                  {isMobile ? <LoginIcon fontSize="small" /> : "Login"}
+                </Button>
+              )
             )}
           </Box>
         </Toolbar>
@@ -309,12 +324,22 @@ const Navbar = () => {
             alignItems: "center",
             padding: "0.75rem",
           }}>
-            <Logo />
+            <Box onClick={() => navigate("/")} sx={{ cursor: "pointer" }}>
+              {theme === "dark" ? (
+                <img 
+                  src={footerLogo} 
+                  alt="Dark Logo" 
+                  style={{ height: "40px" }}
+                />
+              ) : (
+                <Logo />
+              )}
+            </Box>
             <IconButton 
               onClick={() => setDrawerOpen(false)}
               sx={{ 
                 padding: "8px",
-                color: "#000000" // White color for close icon
+                color: theme === "dark" ? "#F8FAFC" : "#1E293B"
               }}
             >
               <CloseIcon />
@@ -329,7 +354,7 @@ const Navbar = () => {
             padding: "0.5rem",
             '& .MuiListItem-root': {
               padding: "8px 12px",
-              marginBottom: "0px" // Remove gap after Donation Campaigns
+              marginBottom: "0px"
             }
           }}>
             {navLinks.map((link) => (
@@ -396,6 +421,7 @@ const Navbar = () => {
                     }}
                   />
                 </ListItem>
+               
                 <ListItem 
                   button 
                   onClick={handleLogout}
@@ -429,10 +455,12 @@ const Navbar = () => {
                   setDrawerOpen(false);
                 }}
                 sx={{ 
-                  bgcolor: "#FBAE02", 
-                  color: "#000", 
+                  bgcolor: theme === "dark" ? "#60A5FA" : "#FBAE02",
+                  color: theme === "dark" ? "#fff" : "#000",
                   fontWeight: "bold", 
-                  '&:hover': { bgcolor: "#e09e00" },
+                  '&:hover': {
+                    bgcolor: theme === "dark" ? "#3B82F6" : "#e09e00"
+                  },
                 }}
               >
                 Login

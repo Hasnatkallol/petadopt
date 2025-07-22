@@ -1,103 +1,245 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
+import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
+
+const LIMIT = 6;
 
 const PetListing = () => {
-  const [pets, setPets] = useState([]);
+  const { theme } = useContext(FirebaseAuthContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const axiosPublic = useAxiosPublic();
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["pets"],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axiosPublic.get(
+        `/adoptPet?page=${pageParam}&limit=${LIMIT}`
+      );
+      return res.data;
+    },
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.hasMore ? pages.length + 1 : undefined;
+    },
+  });
+
+  const { ref, inView } = useInView();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/adoptPet",{credentials: "include"});
-        const data = await response.json();
-        setPets(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchData();
-  }, []);
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
-  // Get unique categories from pets for dropdown
-  const categories = [...new Set(pets.map((pet) => pet.category))];
+  const allPets = data?.pages.flatMap((page) => page.pets) || [];
 
-  // Filter and sort pets according to your requirements
-  const filteredPets = pets
+  const categories = [...new Set(allPets.map((pet) => pet.category))];
+
+  const filteredPets = allPets
     .filter((pet) => pet.isAdopted === false)
-    .filter((pet) => pet.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((pet) =>
+      pet.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     .filter((pet) =>
       selectedCategory ? pet.category === selectedCategory : true
     )
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+  const themeStyles = {
+    light: {
+      bg: "bg-gray-50",
+      text: "text-gray-800",
+      card: "bg-white border border-gray-100",
+      input: "bg-white border-gray-300 focus:border-blue-500",
+      button: "bg-blue-600 hover:bg-blue-700",
+      secondaryText: "text-gray-600",
+      accent: "text-blue-600",
+    },
+    dark: {
+      bg: "bg-gray-900",
+      text: "text-gray-100",
+      card: "bg-gray-800 border-gray-700",
+      input: "bg-gray-700 border-gray-600 focus:border-blue-400",
+      button: "bg-blue-500 hover:bg-blue-600",
+      secondaryText: "text-gray-300",
+      accent: "text-blue-400",
+    },
+  };
+
+  const currentTheme = themeStyles[theme] || themeStyles.light;
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Adopt a Pet</h1>
-
-      {/* Search and category filter */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search pets by name..."
-          className="input border-1 p-2 rounded-2xl border-gray-400 shadow-2xl input-bordered w-full md:w-1/2"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <select
-          className="select border-1 p-2 rounded-2xl border-gray-400 shadow-2xl select-bordered w-full md:w-1/4"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat, idx) => (
-            <option key={idx} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Pets Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-        {filteredPets.length === 0 && (
-          <div className="col-span-full text-center text-gray-500 mt-10">
-            No pets found.
+    <div className={` ${currentTheme.bg} ${currentTheme.text}`}>
+      <div
+        className={`min-h-screen py-8 w-11/12 mx-auto`}
+      >
+        <div className="">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <motion.h1
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-4xl font-bold mb-4"
+            >
+              Find Your <span className={currentTheme.accent}>Perfect</span> Pet
+            </motion.h1>
+            <p
+              className={`text-lg max-w-2xl mx-auto ${currentTheme.secondaryText}`}
+            >
+              Browse our adorable pets waiting for their forever homes
+            </p>
           </div>
-        )}
 
-        {filteredPets.map((pet) => (
+          {/* Search and Filter Section */}
           <motion.div
-            key={pet._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="max-w-sm bg-white rounded-lg border border-gray-200 shadow-md overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex flex-col md:flex-row items-center justify-between gap-4 mb-12"
           >
-            <img
-              className="rounded-t-lg w-full h-48 object-cover"
-              src={pet.image}
-              alt={pet.name}
-            />
-            <div className="p-5">
-              <h5 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
-                {pet.name}
-              </h5>
-              <p className="mb-1 text-gray-700">Age: {pet.age}</p>
-              <p className="mb-3 text-gray-700">Location: {pet.location}</p>
-              <p className="mb-3 text-gray-700"> {pet.shortDescription}</p>
-              <div className="text-right">
-                <Link to={`/petsListing/${pet._id}`}>
-                  <button className="inline-block px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 font-medium">
-                    View Details
-                  </button>
-                </Link>
+            <div className="w-full md:w-1/2">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by pet name..."
+                  className={`w-full px-5 py-3 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${currentTheme.input}`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <svg
+                  className="absolute right-4 top-3.5 h-5 w-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
               </div>
             </div>
+
+            <div className="w-full md:w-1/4">
+              <select
+                className={`w-full px-5 py-3 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${currentTheme.input}`}
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat, idx) => (
+                  <option key={idx} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
           </motion.div>
-        ))}
+
+          {/* Pets Grid */}
+          {filteredPets.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
+            >
+              <div className="text-5xl mb-4">🐾</div>
+              <h3 className="text-2xl font-medium mb-2">No pets found</h3>
+              <p className={`${currentTheme.secondaryText}`}>
+                Try adjusting your search or filter criteria
+              </p>
+            </motion.div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredPets.map((pet) => (
+                  <motion.div
+                    key={pet._id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    whileHover={{
+                      y: -5,
+                      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+                    }}
+                    className={`rounded-xl shadow-md overflow-hidden transition-all duration-300 ${currentTheme.card}`}
+                  >
+                    <div className="relative h-56 w-full overflow-hidden">
+                      <img
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        src={pet.image}
+                        alt={pet.name}
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <h3 className="text-xl font-semibold text-white">
+                          {pet.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p
+                            className={`text-sm ${currentTheme.secondaryText}`}
+                          >
+                            <span className="font-medium">Age:</span> {pet.age}
+                          </p>
+                          <p
+                            className={`text-sm ${currentTheme.secondaryText}`}
+                          >
+                            <span className="font-medium">Location:</span>{" "}
+                            {pet.location}
+                          </p>
+                        </div>
+                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {pet.category}
+                        </span>
+                      </div>
+
+                      <p
+                        className={`mb-4 text-sm ${currentTheme.secondaryText}`}
+                      >
+                        {pet.shortDescription}
+                      </p>
+
+                      <Link to={`/petsListing/${pet._id}`}>
+                        <button
+                          className={`w-full py-2 px-4 rounded-lg font-medium text-white transition-colors ${currentTheme.button}`}
+                        >
+                          Meet {pet.name}
+                        </button>
+                      </Link>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Infinite Scroll Trigger */}
+              <div
+                ref={ref}
+                className="h-10 mt-10 flex justify-center items-center"
+              >
+                {isFetchingNextPage && (
+                  <p className="text-sm">Loading more pets...</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

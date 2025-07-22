@@ -13,18 +13,18 @@ const Toggle = ({ checked, onChange, size = "medium" }) => {
       height: 32,
       ballSize: 24,
       translateX: 24,
-    }
+    },
   };
 
   const { width, height, ballSize, translateX } = sizes[size];
 
   return (
-    <label 
+    <label
       className="relative inline-flex items-center cursor-pointer"
-      style={{ 
+      style={{
         width: `${width}px`,
         height: `${height}px`,
-        margin: "0 4px" // Added small margin to prevent crowding
+        margin: "0 4px", // Added small margin to prevent crowding
       }}
     >
       <input
@@ -35,8 +35,10 @@ const Toggle = ({ checked, onChange, size = "medium" }) => {
       />
       <div
         className={`absolute inset-0 rounded-full transition-colors duration-300`}
-        style={{ 
-          backgroundColor: checked ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+        style={{
+          backgroundColor: checked
+            ? "rgba(255,255,255,0.5)"
+            : "rgba(0,0,0,0.5)",
         }}
       />
       <div
@@ -46,7 +48,9 @@ const Toggle = ({ checked, onChange, size = "medium" }) => {
           height: `${ballSize}px`,
           left: "4px",
           top: "50%",
-          transform: checked ? `translateX(${translateX}px) translateY(-50%)` : "translateX(0) translateY(-50%)",
+          transform: checked
+            ? `translateX(${translateX}px) translateY(-50%)`
+            : "translateX(0) translateY(-50%)",
         }}
       />
     </label>
