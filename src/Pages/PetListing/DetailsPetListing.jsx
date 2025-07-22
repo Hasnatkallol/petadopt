@@ -3,7 +3,7 @@ import {
   useLoaderData,
   useLocation,
   useNavigate,
-  useParams,
+ 
 } from "react-router";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 
@@ -30,8 +30,8 @@ const DetailsPetListing = () => {
   const { user } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
   const Pathlocation = useLocation();
-  const { id } = useParams();
-  console.log(id);
+
+
 
   const handleAdoptClick = () => {
     if (!user) {
@@ -62,9 +62,9 @@ const DetailsPetListing = () => {
       addedBy: addedBy,
       status: "requested",
     };
-    console.log(data);
+  
     try {
-      const response = await axiosPublic.post("/requestAdopt", data);
+      const response = await axiosPublic.post(`/requestAdopt?email=${user?.email}`, data);
 
       Swal.fire({
         icon: "success",

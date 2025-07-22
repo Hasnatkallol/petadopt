@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
 import { Dialog } from "@headlessui/react";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";

@@ -32,7 +32,7 @@ const AddPet = () => {
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
   const { user } = useContext(FirebaseAuthContext);
-  const axiosSecure = useAxiosSecure()
+ 
   const axiosPublic = useAxiosPublic()
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
