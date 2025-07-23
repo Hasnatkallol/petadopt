@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const EditMyDonationCompaigns = () => {
-  const { user } = useContext(FirebaseAuthContext);
+  const { user, theme } = useContext(FirebaseAuthContext);
   const pet = useLoaderData();
   const {
     register,
@@ -18,14 +18,44 @@ const EditMyDonationCompaigns = () => {
     clearErrors,
     formState: { errors },
   } = useForm();
+  
+  const themeStyles = {
+    light: {
+      bg: "bg-gray-50",
+      text: "text-gray-800",
+      card: "bg-white border border-gray-200",
+      input: "bg-white border-gray-300 focus:ring-blue-400 focus:border-blue-400",
+      errorBorder: "border-red-500 focus:ring-red-400",
+      button: "bg-blue-600 hover:bg-blue-700",
+      uploadText: "text-blue-600",
+      successText: "text-green-600",
+      errorText: "text-red-500",
+      label: "text-gray-700"
+    },
+    dark: {
+      bg: "bg-gray-900",
+      text: "text-gray-100",
+      card: "bg-gray-800 border-gray-700",
+      input: "bg-gray-700 border-gray-600 focus:ring-blue-500 focus:border-blue-500",
+      errorBorder: "border-red-500 focus:ring-red-500",
+      button: "bg-blue-700 hover:bg-blue-600",
+      uploadText: "text-blue-400",
+      successText: "text-green-400",
+      errorText: "text-red-400",
+      label: "text-gray-300"
+    },
+  };
+
+  const currentTheme = themeStyles[theme] || themeStyles.light;
+
   useEffect(() => {
     if (pet) {
       setValue("petName", pet.petName);
-      setImageUrl(pet.petImage); // So that the preview shows
+      setImageUrl(pet.petImage);
       setValue("maximumDonationAmount", pet.maximumDonationAmount);
       setValue("goal", pet.goal);
       setValue("category", pet.category);
-      setValue("lastDonationDate", pet.lastDonationDate.split("T")[0]); // Format to YYYY-MM-DD
+      setValue("lastDonationDate", pet.lastDonationDate.split("T")[0]);
       setValue("shortDescription", pet.shortDescription);
       setValue("longDescription", pet.longDescription);
     }
@@ -37,13 +67,10 @@ const EditMyDonationCompaigns = () => {
     { value: "Rabbit", label: "Rabbit" },
   ];
 
-  user.email;
-
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
-  const axiosSecure = useAxiosSecure()
+  const axiosSecure = useAxiosSecure();
 
-  // Upload image to imgbb and store URL in state
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
 
@@ -89,19 +116,17 @@ const EditMyDonationCompaigns = () => {
     }
     clearErrors("petImage");
 
-    // Construct your dataset matching your keys
     const updateData = {
       petName: data.petName,
       petImage: imageUrl,
       maximumDonationAmount: Number(data.maximumDonationAmount),
-      donatedAmount: 0, // usually starts at 0, or you can add input if you want
+      donatedAmount: 0,
       goal: Number(data.goal),
       category: data.category,
-      createdAt: new Date().toISOString(), // current timestamp
+      createdAt: new Date().toISOString(),
       lastDonationDate: data.lastDonationDate,
       shortDescription: data.shortDescription,
       longDescription: data.longDescription,
-
       createdByEmail: user.email,
     };
 
@@ -118,12 +143,16 @@ const EditMyDonationCompaigns = () => {
           timer: 1500,
           showConfirmButton: false,
           position: "top-end",
+          background: theme === 'dark' ? '#1f2937' : '#ffffff',
+          color: theme === 'dark' ? '#f3f4f6' : '#111827',
         });
       } else {
         Swal.fire({
           icon: "error",
           title: "Update failed!",
           text: "No changes were made.",
+          background: theme === 'dark' ? '#1f2937' : '#ffffff',
+          color: theme === 'dark' ? '#f3f4f6' : '#111827',
         });
       }
     } catch (error) {
@@ -132,23 +161,27 @@ const EditMyDonationCompaigns = () => {
         icon: "error",
         title: "Error",
         text: "Something went wrong while updating.",
+        background: theme === 'dark' ? '#1f2937' : '#ffffff',
+        color: theme === 'dark' ? '#f3f4f6' : '#111827',
       });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className={`min-h-screen flex items-center justify-center p-4 ${currentTheme.bg} ${currentTheme.text}`}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white p-8 rounded-2xl shadow-md w-full max-w-lg space-y-6"
+        className={`${currentTheme.card} p-6 md:p-8 rounded-2xl shadow-md w-full max-w-2xl space-y-6`}
       >
-        <h2 className="text-2xl font-bold text-gray-800 text-center">
+        <h2 className={`text-2xl font-bold text-center ${
+          theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+        }`}>
           Edit Donation Campaign
         </h2>
 
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
             Pet Image
           </label>
           <input
@@ -157,21 +190,19 @@ const EditMyDonationCompaigns = () => {
             {...register("petImage")}
             onChange={handleImageUpload}
             className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.petImage
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
+              errors.petImage ? currentTheme.errorBorder : currentTheme.input
             }`}
           />
           {uploading && (
-            <p className="text-blue-600 text-sm mt-1">Uploading image...</p>
+            <p className={`text-sm mt-1 ${currentTheme.uploadText}`}>Uploading image...</p>
           )}
           {errors.petImage && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
               {errors.petImage.message}
             </p>
           )}
           {imageUrl && !errors.petImage && (
-            <p className="text-green-600 text-sm mt-1">
+            <p className={`text-sm mt-1 ${currentTheme.successText}`}>
               Image uploaded successfully
             </p>
           )}
@@ -179,130 +210,125 @@ const EditMyDonationCompaigns = () => {
 
         {/* Pet Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
             Pet Name
           </label>
           <input
             {...register("petName", { required: "Pet name is required" })}
             placeholder="Enter pet name"
             className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.petName
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
+              errors.petName ? currentTheme.errorBorder : currentTheme.input
             }`}
           />
           {errors.petName && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
               {errors.petName.message}
             </p>
           )}
         </div>
 
-        {/* Maximum Donation Amount */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Maximum Donation Amount
-          </label>
-          <input
-            type="number"
-            {...register("maximumDonationAmount", {
-              required: "Maximum donation amount is required",
-              min: { value: 1, message: "Must be at least 1" },
-            })}
-            placeholder="Enter max donation amount"
-            className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.maximumDonationAmount
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
-            }`}
-          />
-          {errors.maximumDonationAmount && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.maximumDonationAmount.message}
-            </p>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Maximum Donation Amount */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
+              Maximum Donation Amount
+            </label>
+            <input
+              type="number"
+              {...register("maximumDonationAmount", {
+                required: "Maximum donation amount is required",
+                min: { value: 1, message: "Must be at least 1" },
+              })}
+              placeholder="Enter max donation amount"
+              className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                errors.maximumDonationAmount ? currentTheme.errorBorder : currentTheme.input
+              }`}
+            />
+            {errors.maximumDonationAmount && (
+              <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
+                {errors.maximumDonationAmount.message}
+              </p>
+            )}
+          </div>
+
+          {/* Goal */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
+              Goal
+            </label>
+            <input
+              type="number"
+              {...register("goal", {
+                required: "Goal amount is required",
+                min: { value: 1, message: "Must be at least 1" },
+              })}
+              placeholder="Enter goal amount"
+              className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                errors.goal ? currentTheme.errorBorder : currentTheme.input
+              }`}
+            />
+            {errors.goal && (
+              <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
+                {errors.goal.message}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* goal */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Goal
-          </label>
-          <input
-            type="number"
-            {...register("goal", {
-              required: "Goal amount is required",
-              min: { value: 1, message: "Must be at least 1" },
-            })}
-            placeholder="Enter goal amount"
-            className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.goal
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
-            }`}
-          />
-          {errors.goal && (
-            <p className="text-red-500 text-sm mt-1">{errors.goal.message}</p>
-          )}
-        </div>
-
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category
-          </label>
-          <select
-            {...register("category", { required: "Category is required" })}
-            defaultValue={pet?.category || ""}
-            className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {categoryOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Category */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
+              Category
+            </label>
+            <select
+              {...register("category", { required: "Category is required" })}
+              defaultValue={pet?.category || ""}
+              className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                errors.category ? currentTheme.errorBorder : currentTheme.input
+              }`}
+            >
+              <option value="" disabled>
+                Select a category
               </option>
-            ))}
-          </select>
+              {categoryOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
+              <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
+                {errors.category.message}
+              </p>
+            )}
+          </div>
 
-          <input
-            type="hidden"
-            {...register("category", { required: "Category is required" })}
-          />
-          {errors.category && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.category.message}
-            </p>
-          )}
-        </div>
-
-        {/* Last Donation Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Last Donation Date
-          </label>
-          <input
-            type="date"
-            {...register("lastDonationDate", {
-              required: "Last donation date is required",
-            })}
-            className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.lastDonationDate
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
-            }`}
-          />
-          {errors.lastDonationDate && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.lastDonationDate.message}
-            </p>
-          )}
+          {/* Last Donation Date */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
+              Last Donation Date
+            </label>
+            <input
+              type="date"
+              {...register("lastDonationDate", {
+                required: "Last donation date is required",
+              })}
+              className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                errors.lastDonationDate ? currentTheme.errorBorder : currentTheme.input
+              }`}
+            />
+            {errors.lastDonationDate && (
+              <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
+                {errors.lastDonationDate.message}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Short Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
             Short Description
           </label>
           <input
@@ -311,13 +337,11 @@ const EditMyDonationCompaigns = () => {
             })}
             placeholder="Enter short description"
             className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.shortDescription
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
+              errors.shortDescription ? currentTheme.errorBorder : currentTheme.input
             }`}
           />
           {errors.shortDescription && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
               {errors.shortDescription.message}
             </p>
           )}
@@ -325,7 +349,7 @@ const EditMyDonationCompaigns = () => {
 
         {/* Long Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium mb-1 ${currentTheme.label}`}>
             Long Description
           </label>
           <textarea
@@ -335,13 +359,11 @@ const EditMyDonationCompaigns = () => {
             placeholder="Enter long description"
             rows={5}
             className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-              errors.longDescription
-                ? "border-red-500 focus:ring-red-400"
-                : "focus:ring-blue-400"
+              errors.longDescription ? currentTheme.errorBorder : currentTheme.input
             }`}
           />
           {errors.longDescription && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className={`text-sm mt-1 ${currentTheme.errorText}`}>
               {errors.longDescription.message}
             </p>
           )}
@@ -350,10 +372,10 @@ const EditMyDonationCompaigns = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+          className={`w-full ${currentTheme.button} text-white py-3 rounded-lg transition duration-200 font-medium`}
           disabled={uploading}
         >
-          Update
+          {uploading ? "Processing..." : "Update Campaign"}
         </button>
       </form>
     </div>

@@ -5,12 +5,11 @@ import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
 
-const PaymentForm = ({ id,petName,petImage }) => {
+const PaymentForm = ({ id, petName, petImage }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
- 
 
   const axiosSecure = useAxiosSecure();
   const { user } = useContext(FirebaseAuthContext);
@@ -22,13 +21,12 @@ const PaymentForm = ({ id,petName,petImage }) => {
       return res.data;
     },
   });
-  // console.log(donationInfo)
 
   if (isPending) {
     return <span>Loading...</span>;
   }
 
-  const amountInCents = amount * 100;
+  const TK_TO_USD_RATE = 1 / 100; // 100 Tk = 1 USD
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -40,81 +38,97 @@ const PaymentForm = ({ id,petName,petImage }) => {
     const card = elements.getElement(CardElement);
     if (!card || !amount) return;
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
+    // Validate amount is a positive number
+    const parsedAmount = Number(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setError("Please enter a valid donation amount in Tk.");
+      return;
+    }
+
+    const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
       type: "card",
       card,
     });
 
-    if (error) {
-      console.log("[error]", error);
-      setError(error.message);
+    if (paymentMethodError) {
+      setError(paymentMethodError.message);
+      return;
     } else {
       setError("");
-      console.log("[PaymentMethod]", paymentMethod);
     }
 
-    const res = await axiosSecure.post("/create-payment-intent", {
-      amountInCents,
-      id,
-    });
+    // Convert Tk to USD cents for Stripe
+    const amountInCents = Math.round(parsedAmount * TK_TO_USD_RATE * 100);
+    console.log("Amount in Tk:", parsedAmount, "Amount in cents for Stripe:", amountInCents);
 
-    const clientSecret = res.data.clientSecret;
+    try {
+      const res = await axiosSecure.post("/create-payment-intent", {
+        amountInCents,
+        id,
+      });
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-        billing_details: {
-          name: user.displayName,
-          email: user.email,
+      const clientSecret = res.data.clientSecret;
+
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: user.displayName,
+            email: user.email,
+          },
         },
-      },
-    });
+      });
 
-    if (result.error) {
-      setError(result.error.message);
-    } else {
+      if (result.error) {
+        setError(result.error.message);
+        return;
+      }
+
       if (result.paymentIntent.status === "succeeded") {
         setError("");
-        console.log("payment succeeded !");
-        console.log(result);
 
-        // Save to database
         const paymentData = {
           campaignId: id,
-          petName : petName,
-          petImage: petImage,
+          petName,
+          petImage,
           donorEmail: user.email,
           donorName: user.displayName,
-          amount: amountInCents,
+          amount: parsedAmount, // Store amount in Tk (number)
           transactionId: result.paymentIntent.id,
           paymentMethod: result.paymentIntent.payment_method_types[0],
           date: new Date().toISOString(),
         };
-        console.log(paymentData)
 
         try {
           const saveRes = await axiosSecure.post("/donation", paymentData);
           console.log("Saved to DB:", saveRes.data);
 
-          // ✅ SweetAlert success popup
           Swal.fire({
             title: "Donation Successful!",
             text: "Thank you for your generous donation 🐾",
             icon: "success",
             confirmButtonText: "Awesome!",
           });
+
+          // Optionally reset the form
+          setAmount("");
+          elements.getElement(CardElement).clear();
         } catch (err) {
-          console.error("Failed to save to DB:", err);
+          console.error(
+            "Failed to save to DB:",
+            err.response ? err.response.data : err.message
+          );
           Swal.fire({
-            title: "Saved Failed!",
-            text: "Payment was processed but failed to store in DB.",
+            title: "Save Failed!",
+            text: "Payment was processed but failed to store in database.",
             icon: "error",
           });
         }
       }
+    } catch (err) {
+      console.error("Payment processing failed:", err);
+      setError("Payment failed. Please try again.");
     }
-
-    console.log("res from intent ", res);
   };
 
   return (
@@ -124,12 +138,12 @@ const PaymentForm = ({ id,petName,petImage }) => {
         className="space-y-6 bg-white p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto"
       >
         <h3 className="text-xl font-semibold text-gray-800 text-center">
-          Enter Payment Details
+          Enter Payment Details (Amount in Tk)
         </h3>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Donation Amount ($)
+            Donation Amount (Tk)
           </label>
           <input
             type="number"
@@ -138,7 +152,7 @@ const PaymentForm = ({ id,petName,petImage }) => {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-            placeholder="Enter amount (e.g., 25)"
+            placeholder="Enter amount in Tk (e.g., 2500)"
           />
         </div>
 
@@ -167,7 +181,7 @@ const PaymentForm = ({ id,petName,petImage }) => {
           disabled={!stripe}
           className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Donate Now {amount}
+          Donate Now {amount} Tk
         </button>
         {error && <p className="text-red-500">{error}</p>}
       </form>

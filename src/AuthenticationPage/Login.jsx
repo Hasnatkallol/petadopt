@@ -1,24 +1,52 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import loginAnimation from "../assets/Login/login.json"; // Only for large screens
-import Lottie from "lottie-react";
+
+import loginImage from "../assets/Login/login.jpg";
 import GoogleLogin from "./GoogleLogin";
-import GitHubLogin from "./GitHubLogin";
+import GithubLogin from "./GitHubLogin";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { emailLogin, setLoading, theme } = useContext(FirebaseAuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     document.title = "Login";
   }, []);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  console.log("Location is " , location)
-  const { emailLogin, setLoading } = useContext(FirebaseAuthContext);
+  // Theme-based colors
+  const themeColors = {
+    light: {
+      bg: "#F1F5F9",
+      cardBg: "#FFFFFF",
+      text: "#1E293B",
+      activeLink: "#FBAE02",
+      buttonBg: "#FBAE02",
+      buttonHover: "#e09e00",
+      inputBg: "#FFFFFF",
+      border: "#E2E8F0",
+      socialButtonBg: "#FFFFFF",
+      socialButtonBorder: "#E2E8F0",
+    },
+    dark: {
+      bg: "#0F172A",
+      cardBg: "#1E293B",
+      text: "#F8FAFC",
+      activeLink: "#60A5FA",
+      buttonBg: "#60A5FA",
+      buttonHover: "#3B82F6",
+      inputBg: "#334155",
+      border: "#475569",
+      socialButtonBg: "#334155",
+      socialButtonBorder: "#475569",
+    },
+  };
+
+  const currentTheme = themeColors[theme];
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -27,9 +55,13 @@ const Login = () => {
 
     emailLogin(email, password)
       .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(user);
-        Swal.fire("Success!", "User logged in successfully", "success");
+        Swal.fire({
+          title: "Success!",
+          text: "User logged in successfully",
+          icon: "success",
+          background: currentTheme.cardBg,
+          color: currentTheme.text,
+        });
         navigate(location?.state?.from || "/");
       })
       .catch((error) => {
@@ -48,99 +80,180 @@ const Login = () => {
             message = "Login Failed!";
         }
 
-        Swal.fire("Error", message, "error");
+        Swal.fire({
+          title: "Error",
+          text: message,
+          icon: "error",
+          background: currentTheme.cardBg,
+          color: currentTheme.text,
+        });
         setLoading(false);
       });
   };
 
   return (
-    <div className="w-11/12 mx-auto my-10 flex flex-col-reverse md:flex-row items-center justify-center gap-10">
-      {/* Left: Form Section */}
-      <div className="w-full md:w-1/2 flex justify-center">
-        <div className="w-full max-w-md p-6 rounded-lg shadow-lg bg-base-200">
-          <h1 className="text-black font-semibold text-center text-2xl mb-4">
-            Login Your Account
-          </h1>
+    <div
+      className="min-h-screen flex items-center justify-center p-4 transition-colors duration-300"
+      style={{ backgroundColor: currentTheme.bg }}
+    >
+      <div className="w-full max-w-6xl flex flex-col md:flex-row rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-lg">
+        {/* Left: Form Section */}
+        <div
+          className="w-full md:w-1/2 p-8 md:p-12 transition-colors duration-300"
+          style={{
+            backgroundColor: currentTheme.cardBg,
+            color: currentTheme.text,
+          }}
+        >
+          <div className="max-w-md mx-auto">
+            <h1 className="text-3xl font-bold mb-2 text-center">
+              Welcome Back
+            </h1>
+            <p className="text-center mb-8 opacity-80">Sign in to continue</p>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label className="label">Email</label>
-              <input
-                name="email"
-                type="email"
-                className="input w-full"
-                placeholder="Email"
-                required
-              />
-            </div>
+            <form onSubmit={handleLogin} className="space-y-6">
+              {/* Email Input */}
+              <div className="space-y-2">
+                <label className="block font-medium">Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  className="w-full p-3 rounded-lg transition-all duration-200 focus:ring-2 focus:outline-none"
+                  style={{
+                    backgroundColor: currentTheme.inputBg,
+                    borderColor: currentTheme.border,
+                  }}
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
 
-            {/* Password with toggle */}
-            <div className="relative">
-              <label className="label">Password</label>
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                className="input w-full pr-10"
-                placeholder="Password"
-                required
-              />
+              {/* Password Input */}
+              <div className="space-y-2">
+                <label className="block font-medium">Password</label>
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    className="w-full p-3 rounded-lg transition-all duration-200 focus:ring-2 focus:outline-none pr-10"
+                    style={{
+                      backgroundColor: currentTheme.inputBg,
+                      borderColor: currentTheme.border,
+                    }}
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ color: currentTheme.text }}
+                  >
+                    {showPassword ? (
+                      <AiOutlineEyeInvisible className="text-xl" />
+                    ) : (
+                      <AiOutlineEye className="text-xl" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Forgot Password */}
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm hover:underline"
+                  style={{ color: currentTheme.activeLink }}
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                className="w-full py-3 px-4 rounded-lg font-semibold transition-colors duration-200 hover:shadow-md"
+                style={{
+                  backgroundColor: currentTheme.buttonBg,
+                  color: theme === "light" ? "#1E293B" : "#0F172A",
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = currentTheme.buttonHover)
+                }
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = currentTheme.buttonBg)
+                }
+              >
+                Login
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="flex items-center my-6">
+              <div
+                className="flex-grow border-t"
+                style={{ borderColor: currentTheme.border }}
+              ></div>
               <span
-                className="absolute right-3 top-8 cursor-pointer text-xl text-gray-600"
-                onClick={() => setShowPassword(!showPassword)}
+                className="mx-4 text-sm"
+                style={{ color: currentTheme.text }}
               >
-                {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                OR CONTINUE WITH
               </span>
+              <div
+                className="flex-grow border-t"
+                style={{ borderColor: currentTheme.border }}
+              ></div>
             </div>
 
-            {/* Forgot password */}
-            <div className="mt-2">
-              <a
-                href="https://mail.google.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link text-blue-800 underline font-semibold link-hover"
+            {/* Social Logins */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <GoogleLogin theme={theme} currentTheme={currentTheme} />
+              <GithubLogin theme={theme} currentTheme={currentTheme} />
+            </div>
+
+            {/* Sign Up Link */}
+            <div className="mt-8 text-center">
+              <span style={{ color: currentTheme.text }}>
+                Don't have an account?{" "}
+              </span>
+              <Link
+                to="/register"
+                state={location.state}
+                className="font-semibold hover:underline"
+                style={{ color: currentTheme.activeLink }}
               >
-                Forgot password?
-              </a>
+                Sign up
+              </Link>
             </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="btn bg-[#161A20] text-white w-full"
-            >
-              Login
-            </button>
-          </form>
-
-          <div className="divider">OR</div>
-          <div className="w-full">
-            <GoogleLogin ></GoogleLogin>
-            <GitHubLogin></GitHubLogin>
           </div>
-
-          {/* Signup link */}
-          <h1 className="text-black font-semibold text-center mt-4">
-            Don't have an account?{" "}
-            <Link
-              className="text-red-600"
-              to={"/register"}
-              state={location.state}
-            >
-              Sign up
-            </Link>
-          </h1>
         </div>
-      </div>
 
-      {/* Right: Lottie Animation (only visible on md and up) */}
-      <div className="w-full md:w-1/2 hidden md:flex justify-center items-center">
-        <Lottie
-          animationData={loginAnimation}
-          loop={true}
-          className="w-full max-w-md"
-        />
+        {/* Right: Image Section */}
+        <div className="hidden md:block md:w-1/2 relative">
+          <img
+            src={loginImage}
+            alt="Login visual"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-t from-black/70 to-black/40">
+            <div className="text-center">
+              <h2
+                className="text-4xl font-bold text-white mb-4"
+                style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
+              >
+                Discover Amazing Content
+              </h2>
+              <p
+                className="text-white/90 max-w-md mx-auto"
+                style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.5)" }}
+              >
+                Join our community of passionate users and explore exclusive
+                features.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

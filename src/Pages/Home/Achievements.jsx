@@ -33,8 +33,8 @@ const AchievementsSection = () => {
   const currentColors = colors[theme] || colors.light;
 
   return (
-    <section className={`py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 xl:px-20 ${currentColors.bg}`}>
-      <div className="max-w-7xl mx-auto">
+    <section className={`py-12 sm:py-16 lg:py-20 px-8 ${currentColors.bg}`}>
+      <div className="w-11/12 mx-auto">
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12 xl:gap-16 items-center">
           {/* Left image - full width on mobile, half on larger screens */}
           <div className="w-full lg:w-1/2">

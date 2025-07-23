@@ -20,6 +20,8 @@
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-table": "^8.21.3",
+    "@tiptap/react": "^3.0.7",
+    "@tiptap/starter-kit": "^3.0.7",
     "axios": "^1.10.0",
     "firebase": "^11.10.0",
     "flowbite": "^3.1.2",

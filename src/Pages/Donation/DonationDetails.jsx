@@ -158,8 +158,8 @@ const DonationDetails = () => {
           </Elements>
         )}
 
-        <div className="mt-12">
-          <h2 className={`text-2xl font-bold mb-6 ${currentTheme.text}`}>Recommended Campaigns</h2>
+        <div className="mt-8">
+        
           <RecommendedCampaigns currentCampaignId={_id} />
         </div>
       </div>

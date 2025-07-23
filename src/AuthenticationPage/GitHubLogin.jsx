@@ -1,103 +1,116 @@
-import React, { useContext } from "react";
-
-import Swal from "sweetalert2";
-import { useLocation, useNavigate } from "react-router";
-
+import React, { useContext, useState } from "react";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
+import Swal from "sweetalert2";
+import { useLocation, useNavigate } from "react-router-dom";
 import useAxiosPublic from "../Hooks/useAxiosPublic";
-
-
+import { FaGithub } from "react-icons/fa";
 
 const GitHubLogin = () => {
-  const { setUser, setLoading, signInWithGithub } =
-    useContext(FirebaseAuthContext);
+  const { setUser, setLoading, signInWithGithub, theme } = useContext(FirebaseAuthContext);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const axiosPublic = useAxiosPublic();
-  const handleGitHubLogin = () => {
-    setUser(""); // clear user state initially
-    setLoading(true); // start loading
 
-    signInWithGithub()
-      .then(async (result) => {
-        const loggedInUser = result.user;
-        console.log(loggedInUser);
+  const handleGitHubLogin = async () => {
+    setIsLoading(true);
+    setUser(""); // Clear user state initially
+    setLoading(true); // Start loading
 
-        let email = loggedInUser.email;
+    try {
+      const result = await signInWithGithub();
+      const loggedInUser = result.user;
+      
+      let email = loggedInUser.email;
+      // Fallback for email if not directly available
+      if (!email && loggedInUser?.providerData?.length) {
+        email = loggedInUser.providerData[0]?.email;
+      }
 
-        // Fallback for email if not directly available
-        if (!email && loggedInUser?.providerData?.length) {
-          console.log("user email is not directly provided");
-          email = loggedInUser.providerData[0]?.email;
-        }
+      if (email) {
+        const userInfo = {
+          name: loggedInUser.displayName || loggedInUser.reloadUserInfo.screenName,
+          image: loggedInUser.photoURL || `https://github.com/${loggedInUser.reloadUserInfo.screenName}.png`,
+          email: email,
+          role: "user",
+          created_at: new Date().toISOString(),
+          last_log_in: new Date().toISOString(),
+        };
 
-        if (email) {
-          const userInfo = {
-            name: loggedInUser.displayName,
-            image: loggedInUser.photoURL,
-            email: email,
-            role: "user",
-            created_at: new Date().toISOString(),
-            last_log_in: new Date().toISOString(),
-          };
+        await axiosPublic.post("/users", userInfo);
+        setUser(loggedInUser);
+      }
 
-          try {
-            const userRes = await axiosPublic.post("/users", userInfo);
-            console.log("user update", userRes.data);
-            setUser(loggedInUser);
-          } catch (err) {
-            console.error("Failed to update user:", err);
-            Swal.fire("Error", "Failed to update user info", "error");
-          }
-        }
-
-        setLoading(false);
-        Swal.fire("Success!", "Signed in with Github", "success");
-        navigate(location?.state?.from || "/");
-      })
-      .catch((error) => {
-        console.error(error);
-        setLoading(false);
-        Swal.fire("Error", error.message, "error");
+      Swal.fire({
+        title: "Success!",
+        text: "Signed in with GitHub",
+        icon: "success",
+        background: theme === "dark" ? "#1E293B" : "#FFFFFF",
+        color: theme === "dark" ? "#F8FAFC" : "#1E293B",
       });
+      
+      navigate(location?.state?.from || "/");
+    } catch (error) {
+      console.error("GitHub login error:", error);
+      Swal.fire({
+        title: "Error",
+        text: error.message || "Failed to sign in with GitHub",
+        icon: "error",
+        background: theme === "dark" ? "#1E293B" : "#FFFFFF",
+        color: theme === "dark" ? "#F8FAFC" : "#1E293B",
+      });
+    } finally {
+      setIsLoading(false);
+      setLoading(false);
+    }
   };
 
+  // Theme-based styles
+  const buttonStyles = {
+    light: {
+      background: "#24292E", // GitHub's dark color
+      color: "#FFFFFF",
+      border: "1px solid #24292E",
+      hover: "#2F363D",
+    },
+    dark: {
+      background: "#2D3748",
+      color: "#E2E8F0",
+      border: "1px solid #4A5568",
+      hover: "#3C4657",
+    },
+  };
+
+  const currentStyle = buttonStyles[theme] || buttonStyles.light;
+
   return (
-    <div>
-      <button
-        onClick={handleGitHubLogin}
-        className="btn bg-white text-black w-full border-[#e5e5e5]"
-      >
-        <svg
-          aria-label="Google logo"
-          width="16"
-          height="16"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 512 512"
-        >
-          <g>
-            <path d="m0 0H512V512H0" fill="#fff"></path>
-            <path
-              fill="#34a853"
-              d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"
-            ></path>
-            <path
-              fill="#4285f4"
-              d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"
-            ></path>
-            <path
-              fill="#fbbc02"
-              d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"
-            ></path>
-            <path
-              fill="#ea4335"
-              d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"
-            ></path>
-          </g>
-        </svg>
-        Login with GitHub
-      </button>
-    </div>
+    <button
+      onClick={handleGitHubLogin}
+      disabled={isLoading}
+      className={`flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md ${
+        isLoading ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.01]"
+      }`}
+      style={{
+        backgroundColor: currentStyle.background,
+        color: currentStyle.color,
+        border: currentStyle.border,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = currentStyle.hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = currentStyle.background;
+      }}
+    >
+      {isLoading ? (
+        <div className="h-5 w-5 border-2 border-t-transparent border-current rounded-full animate-spin"></div>
+      ) : (
+        <>
+          <FaGithub className="text-xl" />
+          <span>GitHub</span>
+        </>
+      )}
+    </button>
   );
 };
 

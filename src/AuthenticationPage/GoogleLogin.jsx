@@ -1,79 +1,104 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 import Swal from "sweetalert2";
-import { useLocation, useNavigate } from "react-router";
-
+import { useLocation, useNavigate } from "react-router-dom";
 import useAxiosPublic from "../Hooks/useAxiosPublic";
+import { FcGoogle } from "react-icons/fc";
 
 const GoogleLogin = () => {
-  const { setUser, setLoading, signInWithGoogle } =
-    useContext(FirebaseAuthContext);
+  const { setUser, setLoading, signInWithGoogle, theme } = useContext(FirebaseAuthContext);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const axiosPublic = useAxiosPublic();
-  const handleGoogleLogin = () => {
-    signInWithGoogle()
-      .then(async (result) => {
-        setUser(result.user);
-        const user = result.user;
-        console.log("google login user", user);
-        const userInfo = {
-          name: user?.displayName,
-          image: user?.photoURL,
-          email: user?.email,
-          role: "user", // default role
-          created_at: new Date().toISOString(),
-          last_log_in: new Date().toISOString(),
-        };
-        console.log(userInfo);
 
-        const userRes = await axiosPublic.post("/users", userInfo);
-        console.log("user update", userRes.data);
-        setLoading(false);
-        Swal.fire("Success!", "Signed in with Google", "success");
-        navigate(location?.state?.from || "/");
-      })
-      .catch((error) => {
-        console.error(error);
-        Swal.fire("Error", error.message, "error");
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      setUser(result.user);
+      
+      const userInfo = {
+        name: result.user?.displayName,
+        image: result.user?.photoURL,
+        email: result.user?.email,
+        role: "user",
+        created_at: new Date().toISOString(),
+        last_log_in: new Date().toISOString(),
+      };
+
+      await axiosPublic.post("/users", userInfo);
+      
+      Swal.fire({
+        title: "Success!",
+        text: "Signed in with Google",
+        icon: "success",
+        background: theme === "dark" ? "#1E293B" : "#FFFFFF",
+        color: theme === "dark" ? "#F8FAFC" : "#1E293B",
       });
+      
+      navigate(location?.state?.from || "/");
+    } catch (error) {
+      console.error("Google login error:", error);
+      Swal.fire({
+        title: "Error",
+        text: error.message || "Failed to sign in with Google",
+        icon: "error",
+        background: theme === "dark" ? "#1E293B" : "#FFFFFF",
+        color: theme === "dark" ? "#F8FAFC" : "#1E293B",
+      });
+    } finally {
+      setIsLoading(false);
+      setLoading(false);
+    }
   };
+
+  // Theme-based styles
+  const buttonStyles = {
+    light: {
+      background: "#FFFFFF",
+      color: "#3C4043",
+      border: "1px solid #DADCE0",
+      hover: "#F7F8F8",
+    },
+    dark: {
+      background: "#2D3748",
+      color: "#E2E8F0",
+      border: "1px solid #4A5568",
+      hover: "#3C4657",
+    },
+  };
+
+  const currentStyle = buttonStyles[theme] || buttonStyles.light;
+
   return (
-    <div>
-      <button
-        onClick={handleGoogleLogin}
-        className="btn bg-white text-black w-full border-[#e5e5e5]"
-      >
-        <svg
-          aria-label="Google logo"
-          width="16"
-          height="16"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 512 512"
-        >
-          <g>
-            <path d="m0 0H512V512H0" fill="#fff"></path>
-            <path
-              fill="#34a853"
-              d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"
-            ></path>
-            <path
-              fill="#4285f4"
-              d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"
-            ></path>
-            <path
-              fill="#fbbc02"
-              d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"
-            ></path>
-            <path
-              fill="#ea4335"
-              d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"
-            ></path>
-          </g>
-        </svg>
-        Login with Google
-      </button>
-    </div>
+    <button
+      onClick={handleGoogleLogin}
+      disabled={isLoading}
+      className={`flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md ${
+        isLoading ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.01]"
+      }`}
+      style={{
+        backgroundColor: currentStyle.background,
+        color: currentStyle.color,
+        border: currentStyle.border,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = currentStyle.hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = currentStyle.background;
+      }}
+    >
+      {isLoading ? (
+        <div className="h-5 w-5 border-2 border-t-transparent border-current rounded-full animate-spin"></div>
+      ) : (
+        <>
+          <FcGoogle className="text-xl" />
+          <span> Google</span>
+        </>
+      )}
+    </button>
   );
 };
 
