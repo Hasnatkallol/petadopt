@@ -1,19 +1,51 @@
 import React, { useEffect, useState, useContext } from "react";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FirebaseAuthContext } from "../../../Firebase/FirebaseAuthContext";
 import useAdmin from "../../../Hooks/useAdmin";
+import Loading from "../../../Shared/Loading";
 
 const AllPets = () => {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const axiosSecure = useAxiosSecure();
-  const { user } = useContext(FirebaseAuthContext);
+  const { user, theme } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
-
   const [isAdmin] = useAdmin();
+
+  const themeStyles = {
+    light: {
+      bg: "bg-gray-50",
+      text: "text-gray-800",
+      card: "bg-white border border-gray-100",
+      input: "bg-white border-gray-300 focus:border-blue-500",
+      button: "bg-blue-600 hover:bg-blue-700",
+      secondaryText: "text-gray-600",
+      accent: "text-blue-600",
+      sidebar: "bg-white",
+      topBar: "bg-white",
+      hover: "hover:bg-gray-100",
+      activeLink: "bg-blue-100 text-blue-700",
+      iconButton: "bg-gray-200 hover:bg-gray-300",
+    },
+    dark: {
+      bg: "bg-gray-900",
+      text: "text-gray-100",
+      card: "bg-gray-800 border-gray-700",
+      input: "bg-gray-700 border-gray-600 focus:border-blue-400",
+      button: "bg-blue-500 hover:bg-blue-600",
+      secondaryText: "text-gray-300",
+      accent: "text-blue-400",
+      sidebar: "bg-gray-800",
+      topBar: "bg-gray-800",
+      hover: "hover:bg-gray-700",
+      activeLink: "bg-blue-700 text-white",
+      iconButton: "bg-gray-700 hover:bg-gray-600",
+    },
+  };
+
+  const currentTheme = themeStyles[theme] || themeStyles.light;
 
   useEffect(() => {
     const fetchPets = async () => {
@@ -63,178 +95,176 @@ const AllPets = () => {
     navigate(`/dashboard/update/${petId}`);
   };
 
-  // New handler for changing adoption status
-
-  const handleAdoptionStatusChange = async (petId, newStatus) => {
-    if (newStatus === undefined || newStatus === null) return;
-
-    const currentStatus = pets.find((pet) => pet._id === petId)?.adoptionStatus;
-
-    if (currentStatus === newStatus) {
-      Swal.fire(
-        "Info",
-        "The adoption status is already set to this value.",
-        "info"
-      );
-      return;
-    }
-
+  const handleAdopted = async (petId) => {
     try {
-      const res = await axiosSecure.patch(`/adoptPet/status/${petId}`, {
-        adoptionStatus: newStatus,
-      });
-
+      const res = await axiosSecure.patch(`/isAdoptedTrue/${petId}`);
       if (res.data.modifiedCount > 0) {
-        setPets((prevPets) =>
-          prevPets.map((pet) =>
-            pet._id === petId ? { ...pet, adoptionStatus: newStatus } : pet
-          )
-        );
-        Swal.fire("Success!", "Adoption status updated.", "success");
-      } else {
-        Swal.fire("Failed!", "Could not update adoption status.", "error");
+        setPets(pets.map(pet => 
+          pet._id === petId ? {...pet, adoptionStatus: "Adopted"} : pet
+        ));
+        Swal.fire("Success!", "Pet status updated to Adopted.", "success");
       }
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Something went wrong while updating.", "error");
+      console.log(error);
+      Swal.fire("Error", "Failed to update adoption status.", "error");
     }
   };
 
-  if (loading) {
-    return (
-      <p className="text-center mt-16 text-lg font-medium text-gray-600">
-        Loading pets...
-      </p>
-    );
-  }
+  const handleAdoptFalse = async (petId) => {
+    try {
+      const res = await axiosSecure.patch(`/isAdoptedFalse/${petId}`);
+      if (res.data.modifiedCount > 0) {
+        setPets(pets.map(pet => 
+          pet._id === petId ? {...pet, adoptionStatus: "Not Adopted"} : pet
+        ));
+        Swal.fire("Success!", "Pet status updated to Not Adopted.", "success");
+      }
+    } catch (error) {
+      console.log(error);
+      Swal.fire("Error", "Failed to update adoption status.", "error");
+    }
+  };
+  if (loading) return <Loading />;
+
+
 
   return (
-    <div className="p-6 max-w-[95vw] mx-auto">
-      <h2 className="text-3xl font-extrabold mb-8 text-center text-indigo-700 tracking-wide">
+    <div className={`p-4 md:p-6 max-w-[95vw] mx-auto ${currentTheme.bg} ${currentTheme.text} min-h-screen`}>
+      <h2 className={`text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 text-center ${theme === 'light' ? 'text-indigo-700' : 'text-indigo-400'} tracking-wide`}>
         All Added Pets
       </h2>
 
-      <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
-        <table className="min-w-full bg-white divide-y divide-gray-200">
-          <thead className="bg-indigo-100">
+      <div className={`overflow-x-auto shadow-lg rounded-lg border ${currentTheme.card} ${currentTheme.border}`}>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className={`${theme === 'light' ? 'bg-indigo-100' : 'bg-gray-700'}`}>
             <tr>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
                 Image
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
                 Age
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider hidden sm:table-cell">
                 Breed
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider hidden md:table-cell">
                 Category
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider hidden md:table-cell">
                 Gender
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider hidden lg:table-cell">
                 Location
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
                 Vaccinated
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
-                Adoption Status
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
+                Status
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider hidden lg:table-cell">
                 Added By
               </th>
               {isAdmin && (
-                <th className="px-5 py-3 text-left text-sm font-semibold text-indigo-900 uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className={`divide-y ${theme === 'light' ? 'divide-gray-200' : 'divide-gray-700'}`}>
             {pets.map((pet) => (
               <tr
                 key={pet._id}
-                className="hover:bg-indigo-50 transition-colors duration-200"
+                className={`${theme === 'light' ? 'hover:bg-indigo-50' : 'hover:bg-gray-700'} transition-colors duration-200`}
               >
-                <td className="px-5 py-3 whitespace-nowrap">
+                <td className="px-3 py-4 whitespace-nowrap">
                   <img
                     src={pet.image}
                     alt={pet.name}
-                    className="w-16 h-16 object-cover rounded-lg border border-gray-300 shadow-sm"
+                    className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg border shadow-sm"
                   />
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-gray-800 font-semibold">
+                <td className="px-3 py-4 whitespace-nowrap font-semibold">
                   {pet.name}
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-gray-600">
+                <td className="px-3 py-4 whitespace-nowrap">
                   {pet.age}
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-gray-600">
+                <td className="px-3 py-4 whitespace-nowrap hidden sm:table-cell">
                   {pet.breed}
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-gray-600">
+                <td className="px-3 py-4 whitespace-nowrap hidden md:table-cell">
                   {pet.category}
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-gray-600">
+                <td className="px-3 py-4 whitespace-nowrap hidden md:table-cell">
                   {pet.gender}
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-gray-600">
+                <td className="px-3 py-4 whitespace-nowrap hidden lg:table-cell">
                   {pet.location}
                 </td>
-                <td className="px-5 py-3 whitespace-nowrap text-center text-gray-700">
+                <td className="px-3 py-4 whitespace-nowrap text-center">
                   {pet.vaccinated ? (
-                    <span className="inline-block px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
+                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                      theme === 'light' ? 'text-green-700 bg-green-100' : 'text-green-300 bg-green-900'
+                    }`}>
                       Yes
                     </span>
                   ) : (
-                    <span className="inline-block px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
+                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                      theme === 'light' ? 'text-red-700 bg-red-100' : 'text-red-300 bg-red-900'
+                    }`}>
                       No
                     </span>
                   )}
                 </td>
 
-                <td className="px-5 py-3 whitespace-nowrap text-gray-700 font-medium">
+                <td className="px-3 py-4 whitespace-nowrap font-medium">
                   {isAdmin ? (
-                    <div className="inline-flex items-center space-x-2">
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                       <button
-                        onClick={() =>
-                          handleAdoptionStatusChange(pet._id, "Not Adopted")
-                        }
-                        className={`px-3 py-1 rounded-full border transition-colors duration-300 font-semibold ${
+                        onClick={() => handleAdoptFalse(pet._id)}
+                        className={`px-2 py-1 text-xs md:text-sm rounded-full border transition-colors duration-300 font-semibold ${
                           pet.adoptionStatus === "Not Adopted"
-                            ? "bg-yellow-400 text-white border-yellow-400"
-                            : "bg-white text-yellow-600 border-yellow-600 hover:bg-yellow-100"
+                            ? theme === 'light' 
+                              ? "bg-yellow-400 text-white border-yellow-400" 
+                              : "bg-yellow-600 text-white border-yellow-600"
+                            : theme === 'light'
+                              ? "bg-white text-yellow-600 border-yellow-600 hover:bg-yellow-50"
+                              : "bg-gray-700 text-yellow-400 border-yellow-400 hover:bg-gray-600"
                         }`}
-                        aria-pressed={pet.adoptionStatus === "Not Adopted"}
                       >
                         Not Adopted
                       </button>
                       <button
-                        onClick={() =>
-                          handleAdoptionStatusChange(pet._id, "Adopted")
-                        }
-                        className={`px-3 py-1 rounded-full border transition-colors duration-300 font-semibold ${
+                        onClick={() => handleAdopted(pet._id)}
+                        className={`px-2 py-1 text-xs md:text-sm rounded-full border transition-colors duration-300 font-semibold ${
                           pet.adoptionStatus === "Adopted"
-                            ? "bg-green-500 text-white border-green-500"
-                            : "bg-white text-green-600 border-green-600 hover:bg-green-100"
+                            ? theme === 'light'
+                              ? "bg-green-500 text-white border-green-500"
+                              : "bg-green-600 text-white border-green-600"
+                            : theme === 'light'
+                              ? "bg-white text-green-600 border-green-600 hover:bg-green-50"
+                              : "bg-gray-700 text-green-400 border-green-400 hover:bg-gray-600"
                         }`}
-                        aria-pressed={pet.adoptionStatus === "Adopted"}
                       >
                         Adopted
                       </button>
                     </div>
                   ) : (
                     <span
-                      className={`px-3 py-1 rounded-full font-semibold ${
+                      className={`px-2 py-1 text-xs md:text-sm rounded-full font-semibold ${
                         pet.adoptionStatus === "Adopted"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? theme === 'light'
+                            ? "bg-green-100 text-green-700"
+                            : "bg-green-900 text-green-300"
+                          : theme === 'light'
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-yellow-900 text-yellow-300"
                       }`}
                     >
                       {pet.adoptionStatus}
@@ -242,22 +272,30 @@ const AllPets = () => {
                   )}
                 </td>
 
-                <td className="px-5 py-3 whitespace-nowrap text-gray-600">
+                <td className="px-3 py-4 whitespace-nowrap hidden lg:table-cell">
                   {pet.addedBy}
                 </td>
 
                 {isAdmin && (
-                  <td className="px-5 py-3 whitespace-nowrap">
-                    <div className="flex gap-2">
+                  <td className="px-3 py-4 whitespace-nowrap">
+                    <div className="flex flex-col md:flex-row gap-1 md:gap-2">
                       <button
                         onClick={() => handleUpdate(pet._id)}
-                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className={`px-2 py-1 text-xs md:text-sm rounded ${
+                          theme === 'light' 
+                            ? "bg-blue-600 text-white hover:bg-blue-700" 
+                            : "bg-blue-500 text-white hover:bg-blue-600"
+                        }`}
                       >
                         Update
                       </button>
                       <button
                         onClick={() => handleDelete(pet._id)}
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        className={`px-2 py-1 text-xs md:text-sm rounded ${
+                          theme === 'light'
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "bg-red-500 text-white hover:bg-red-600"
+                        }`}
                       >
                         Delete
                       </button>

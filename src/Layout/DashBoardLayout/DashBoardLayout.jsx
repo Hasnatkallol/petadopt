@@ -28,20 +28,31 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
+    <div
+      className={`min-h-screen flex flex-col ${
+        theme === "dark"
+          ? "bg-gray-900 text-gray-100"
+          : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <Navbar />
 
       {/* Dashboard Header with Menu Button - Only visible on mobile */}
+
       <div
         className={`lg:hidden sticky top-16 z-30 flex justify-between items-center px-4 py-3 w-full border-b ${
-          theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+          theme === "dark"
+            ? "bg-gray-800 border-gray-700"
+            : "bg-white border-gray-200"
         }`}
       >
         <h1 className="text-xl font-bold">Dashboard</h1>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className={`text-xl rounded-full p-2 ${
-            theme === "dark" ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"
+            theme === "dark"
+              ? "bg-gray-700 hover:bg-gray-600"
+              : "bg-gray-200 hover:bg-gray-300"
           }`}
         >
           {sidebarOpen ? <IoMdClose /> : <FiMenu />}
@@ -77,6 +88,114 @@ const DashboardLayout = () => {
                 >
                   <FaUser className="text-lg" />
                   Admin Profile
+                </NavLink>
+                <NavLink
+                  to="/dashboard/addpet"
+                  onClick={closeSidebar}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? theme === "dark"
+                          ? "bg-blue-700 text-white"
+                          : "bg-blue-100 text-blue-700"
+                        : theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <FaPlus className="text-lg" />
+                  Add a Pet
+                </NavLink>
+                <NavLink
+                  to="/dashboard/myAddedPet"
+                  onClick={closeSidebar}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? theme === "dark"
+                          ? "bg-blue-700 text-white"
+                          : "bg-blue-100 text-blue-700"
+                        : theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <FaList className="text-lg" />
+                  My Added Pets
+                </NavLink>
+                <NavLink
+                  to="/dashboard/adoptionRequest"
+                  onClick={closeSidebar}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? theme === "dark"
+                          ? "bg-blue-700 text-white"
+                          : "bg-blue-100 text-blue-700"
+                        : theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <FaHandsHelping className="text-lg" />
+                  Adoption Request
+                </NavLink>
+                <NavLink
+                  to="/dashboard/createDonationCampaign"
+                  onClick={closeSidebar}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? theme === "dark"
+                          ? "bg-blue-700 text-white"
+                          : "bg-blue-100 text-blue-700"
+                        : theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <FaHandHoldingUsd className="text-lg" />
+                  Create Donation Campaign
+                </NavLink>
+                <NavLink
+                  to="/dashboard/myDonationCampaign"
+                  onClick={closeSidebar}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? theme === "dark"
+                          ? "bg-blue-700 text-white"
+                          : "bg-blue-100 text-blue-700"
+                        : theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <FaDonate className="text-lg" />
+                  My Donation Campaigns
+                </NavLink>
+                <NavLink
+                  to="/dashboard/myDonation"
+                  onClick={closeSidebar}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? theme === "dark"
+                          ? "bg-blue-700 text-white"
+                          : "bg-blue-100 text-blue-700"
+                        : theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <FaHandHoldingUsd className="text-lg" />
+                  My Donations
                 </NavLink>
                 <NavLink
                   to="/dashboard/users"
@@ -153,6 +272,7 @@ const DashboardLayout = () => {
                   <FaUser className="text-lg" />
                   My Profile
                 </NavLink>
+
                 <NavLink
                   to="/dashboard/addpet"
                   onClick={closeSidebar}

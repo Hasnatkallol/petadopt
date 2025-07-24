@@ -5,26 +5,37 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import Select from "react-select";
 
 const LIMIT = 6;
 
 const PetListing = () => {
   const { theme } = useContext(FirebaseAuthContext);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const axiosPublic = useAxiosPublic();
+  const [categories, setCategories] = useState([]);
+  const [category, setCategory] = useState({ value: "", label: "All Pets" });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const pet = await axiosPublic.get("/categories");
+      const data = await pet.data;
+      setCategories(data);
+    };
+    fetchData();
+  }, [axiosPublic]);
 
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading,
+    isError,
   } = useInfiniteQuery({
     queryKey: ["pets"],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await axiosPublic.get(
-        `/adoptPet?page=${pageParam}&limit=${LIMIT}`
-      );
+      const res = await axiosPublic.get(`/adoptPet?page=${pageParam}&limit=${LIMIT}`);
       return res.data;
     },
     getNextPageParam: (lastPage, pages) => {
@@ -42,16 +53,13 @@ const PetListing = () => {
 
   const allPets = data?.pages.flatMap((page) => page.pets) || [];
 
-  const categories = [...new Set(allPets.map((pet) => pet.category))];
-
   const filteredPets = allPets
     .filter((pet) => pet.isAdopted === false)
-    .filter((pet) =>
-      pet.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter((pet) =>
-      selectedCategory ? pet.category === selectedCategory : true
-    )
+    .filter((pet) => pet.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((pet) => {
+      if (!category || category.value === "") return true;
+      return pet.category.toLowerCase() === category.value.toLowerCase();
+    })
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const themeStyles = {
@@ -77,13 +85,83 @@ const PetListing = () => {
 
   const currentTheme = themeStyles[theme] || themeStyles.light;
 
+  const customSelectStyles = {
+    control: (provided) => ({
+      ...provided,
+      borderRadius: "9999px",
+      paddingLeft: "10px",
+      paddingRight: "10px",
+      borderColor: "#ccc",
+      boxShadow: "none",
+      minHeight: "48px",
+      backgroundColor: currentTheme.input.includes("bg-gray-700") ? "#374151" : "white",
+      color: currentTheme.text.includes("text-gray-100") ? "white" : "black",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      borderRadius: "12px",
+      zIndex: 100,
+      backgroundColor: currentTheme.input.includes("bg-gray-700") ? "#374151" : "white",
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected 
+        ? (currentTheme.input.includes("bg-gray-700") ? "#1E40AF" : "#e0f2fe")
+        : (currentTheme.input.includes("bg-gray-700") ? "#374151" : "white"),
+      color: currentTheme.text.includes("text-gray-100") ? "white" : "black",
+      borderRadius: "8px",
+      padding: 10,
+      margin: 2,
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: currentTheme.input.includes("bg-gray-700") ? "#4B5563" : "#f3f4f6",
+      },
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: currentTheme.text.includes("text-gray-100") ? "white" : "black",
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: currentTheme.text.includes("text-gray-100") ? "white" : "black",
+    }),
+  };
+
+  const categoryOptions = [
+    { value: "", label: "All Pets" },
+    ...categories.map((cat) => ({
+      value: cat.name.toLowerCase(),
+      label: cat.name,
+    })),
+  ];
+
+  if (isLoading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.bg}`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className={`mt-4 ${currentTheme.text}`}>Loading pets...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.bg}`}>
+        <div className="text-center">
+          <p className={`text-red-500 ${currentTheme.text}`}>
+            Error loading pets. Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={` ${currentTheme.bg} ${currentTheme.text}`}>
-      <div
-        className={`min-h-screen py-8 w-11/12 mx-auto`}
-      >
+    <div className={`${currentTheme.bg} ${currentTheme.text}`}>
+      <div className={`min-h-screen py-8 w-11/12 mx-auto`}>
         <div className="">
-          {/* Header Section */}
           <div className="text-center mb-12">
             <motion.h1
               initial={{ opacity: 0, y: -20 }}
@@ -93,26 +171,26 @@ const PetListing = () => {
             >
               Find Your <span className={currentTheme.accent}>Perfect</span> Pet
             </motion.h1>
-            <p
-              className={`text-lg max-w-2xl mx-auto ${currentTheme.secondaryText}`}
-            >
+            <p className={`text-lg max-w-2xl mx-auto ${currentTheme.secondaryText}`}>
               Browse our adorable pets waiting for their forever homes
             </p>
           </div>
 
-          {/* Search and Filter Section */}
+ 
+
+          {/* Search & Category Filters */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex flex-col md:flex-row items-center justify-between gap-4 mb-12"
+            className="flex flex-col md:flex-row items-center justify-center gap-4 mb-12"
           >
             <div className="w-full md:w-1/2">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search by pet name..."
-                  className={`w-full px-5 py-3 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${currentTheme.input}`}
+                  className={`w-full px-5 py-3 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${currentTheme.input} ${currentTheme.text}`}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -123,43 +201,35 @@ const PetListing = () => {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
             </div>
 
-            <div className="w-full md:w-1/4">
-              <select
-                className={`w-full px-5 py-3 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${currentTheme.input}`}
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option value="">All Categories</option>
-                {categories.map((cat, idx) => (
-                  <option key={idx} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+            {/* Category Select */}
+            <div className="w-full md:w-1/3">
+              <Select
+                options={categoryOptions}
+                value={category}
+                onChange={setCategory}
+                isClearable
+                placeholder="Filter by Category"
+                styles={customSelectStyles}
+                className="react-select-container capitalize"
+                classNamePrefix="react-select"
+              />
             </div>
           </motion.div>
 
           {/* Pets Grid */}
           {filteredPets.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
               <div className="text-5xl mb-4">🐾</div>
               <h3 className="text-2xl font-medium mb-2">No pets found</h3>
               <p className={`${currentTheme.secondaryText}`}>
-                Try adjusting your search or filter criteria
+                {category.value !== "" 
+                  ? `No ${category.label} pets match your search` 
+                  : "Try adjusting your search criteria"}
               </p>
             </motion.div>
           ) : (
@@ -182,37 +252,31 @@ const PetListing = () => {
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                         src={pet.image}
                         alt={pet.name}
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/300x200?text=Pet+Image";
+                        }}
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                        <h3 className="text-xl font-semibold text-white">
-                          {pet.name}
-                        </h3>
+                        <h3 className="text-xl font-semibold text-white">{pet.name}</h3>
                       </div>
                     </div>
 
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <p
-                            className={`text-sm ${currentTheme.secondaryText}`}
-                          >
+                          <p className={`text-sm ${currentTheme.secondaryText}`}>
                             <span className="font-medium">Age:</span> {pet.age}
                           </p>
-                          <p
-                            className={`text-sm ${currentTheme.secondaryText}`}
-                          >
-                            <span className="font-medium">Location:</span>{" "}
-                            {pet.location}
+                          <p className={`text-sm ${currentTheme.secondaryText}`}>
+                            <span className="font-medium">Location:</span> {pet.location}
                           </p>
                         </div>
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${currentTheme.accent.replace("text", "bg")} bg-opacity-20`}>
                           {pet.category}
                         </span>
                       </div>
 
-                      <p
-                        className={`mb-4 text-sm ${currentTheme.secondaryText}`}
-                      >
+                      <p className={`mb-4 text-sm ${currentTheme.secondaryText}`}>
                         {pet.shortDescription}
                       </p>
 
@@ -228,13 +292,9 @@ const PetListing = () => {
                 ))}
               </div>
 
-              {/* Infinite Scroll Trigger */}
-              <div
-                ref={ref}
-                className="h-10 mt-10 flex justify-center items-center"
-              >
+              <div ref={ref} className="h-10 mt-10 flex justify-center items-center">
                 {isFetchingNextPage && (
-                  <p className="text-sm">Loading more pets...</p>
+                  <p className={`text-sm ${currentTheme.text}`}>Loading more pets...</p>
                 )}
               </div>
             </>

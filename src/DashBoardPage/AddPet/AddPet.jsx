@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Select from "react-select";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -7,60 +7,141 @@ import StarterKit from "@tiptap/starter-kit";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
-const categories = [
+// Constants
+const petCategories = [
   { value: "Dog", label: "Dog" },
   { value: "Cat", label: "Cat" },
   { value: "Rabbit", label: "Rabbit" },
+  { value: "Bird", label: "Bird" },
+  { value: "Fish", label: "Fish" },
+  { value: "Other", label: "Other" },
 ];
 
-const genders = [
+const genderOptions = [
   { value: "Male", label: "Male" },
   { value: "Female", label: "Female" },
+  { value: "Unknown", label: "Unknown" },
 ];
 
+const themeStyles = {
+  light: {
+    bg: "bg-gray-50",
+    text: "text-gray-800",
+    card: "bg-white border border-gray-200",
+    input: "bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-400",
+    error: "border-red-500 focus:ring-red-400",
+    button: "bg-blue-600 hover:bg-blue-700",
+    secondaryText: "text-gray-600",
+    accent: "text-blue-600",
+    checkbox: "border-gray-300",
+    uploadBorder: "border-gray-300",
+    uploadHover: "hover:bg-gray-100",
+    select: {
+      control: (base) => ({
+        ...base,
+        backgroundColor: 'white',
+        borderColor: '#d1d5db',
+        '&:hover': {
+          borderColor: '#d1d5db',
+        },
+      }),
+      menu: (base) => ({
+        ...base,
+        backgroundColor: 'white',
+      }),
+      option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isFocused ? '#f3f4f6' : 'white',
+        color: '#1f2937',
+      }),
+    },
+  },
+  dark: {
+    bg: "bg-gray-900",
+    text: "text-gray-100",
+    card: "bg-gray-800 border-gray-700",
+    input: "bg-gray-700 border-gray-600 focus:border-blue-400 focus:ring-blue-500",
+    error: "border-red-400 focus:ring-red-500",
+    button: "bg-blue-700 hover:bg-blue-600",
+    secondaryText: "text-gray-300",
+    accent: "text-blue-400",
+    checkbox: "border-gray-600",
+    uploadBorder: "border-gray-600",
+    uploadHover: "hover:bg-gray-700",
+    select: {
+      control: (base) => ({
+        ...base,
+        backgroundColor: '#374151',
+        borderColor: '#4b5563',
+        color: 'white',
+        '&:hover': {
+          borderColor: '#4b5563',
+        },
+      }),
+      menu: (base) => ({
+        ...base,
+        backgroundColor: '#374151',
+      }),
+      option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isFocused ? '#4b5563' : '#374151',
+        color: 'white',
+      }),
+    },
+  },
+};
+
+// Reusable Input Component
+const Input = ({ label, name, value, onChange, error, theme, textarea, required }) => (
+  <div className="mb-5">
+    <label className={`block mb-2 font-medium ${theme.text}`}>
+      {label}
+      {required && <span className="text-red-500">*</span>}
+    </label>
+    {textarea ? (
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${
+          error ? "border-red-500" : ""
+        }`}
+        rows="4"
+      />
+    ) : (
+      <input
+        type="text"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${
+          error ? "border-red-500" : ""
+        }`}
+      />
+    )}
+    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+  </div>
+);
+
 const AddPet = () => {
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    age: "",
+    location: "",
+    breed: "",
+    shortDesc: "",
+  });
   const [category, setCategory] = useState(null);
-  const [location, setLocation] = useState("");
-  const [breed, setBreed] = useState("");
   const [gender, setGender] = useState(null);
   const [vaccinated, setVaccinated] = useState(false);
-  const [shortDesc, setShortDesc] = useState("");
   const [longDesc, setLongDesc] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { user, theme } = useContext(FirebaseAuthContext);
   const axiosPublic = useAxiosPublic();
-
-  const themeStyles = {
-    light: {
-      bg: "bg-gray-50",
-      text: "text-gray-800",
-      card: "bg-white border border-gray-100",
-      input: "bg-white border-gray-300 focus:border-blue-500",
-      button: "bg-blue-600 hover:bg-blue-700",
-      secondaryText: "text-gray-600",
-      accent: "text-blue-600",
-      checkbox: "border-gray-300",
-      uploadBorder: "border-gray-300",
-      uploadHover: "hover:bg-gray-100",
-    },
-    dark: {
-      bg: "bg-gray-900",
-      text: "text-gray-100",
-      card: "bg-gray-800 border-gray-700",
-      input: "bg-gray-700 border-gray-600 focus:border-blue-400",
-      button: "bg-blue-500 hover:bg-blue-600",
-      secondaryText: "text-gray-300",
-      accent: "text-blue-400",
-      checkbox: "border-gray-600",
-      uploadBorder: "border-gray-600",
-      uploadHover: "hover:bg-gray-700",
-    },
-  };
-
   const currentTheme = themeStyles[theme] || themeStyles.light;
 
   const editor = useEditor({
@@ -71,35 +152,45 @@ const AddPet = () => {
     },
   });
 
+  useEffect(() => {
+    return () => {
+      editor?.destroy();
+    };
+  }, [editor]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
     if (!image || !image.type.startsWith("image/")) {
-      setErrors((prev) => ({
-        ...prev,
-        image: "Please upload a valid image file.",
-      }));
+      setErrors(prev => ({ ...prev, image: "Please upload a valid image file." }));
       return;
     }
 
     setUploading(true);
-    setErrors((prev) => ({ ...prev, image: null }));
+    setErrors(prev => ({ ...prev, image: null }));
 
     try {
       const formData = new FormData();
       formData.append("image", image);
 
-      const imagUploadUrl = `https://api.imgbb.com/1/upload?key=${
-        import.meta.env.VITE_IMGBBKEY
-      }`;
-
-      const res = await axios.post(imagUploadUrl, formData);
+      const res = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBBKEY}`,
+        formData
+      );
+      
       setImageUrl(res.data.data.url);
     } catch (err) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
         image: "Failed to upload image. Please try again.",
       }));
-      setImageUrl("");
     } finally {
       setUploading(false);
     }
@@ -107,92 +198,104 @@ const AddPet = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!name.trim()) newErrors.name = "Pet name is required";
-    if (!age.trim()) newErrors.age = "Valid pet age is required";
+    if (!formData.name.trim()) newErrors.name = "Pet name is required";
+    if (!formData.age.trim()) newErrors.age = "Valid pet age is required";
     if (!category) newErrors.category = "Pet category is required";
-    if (!breed.trim()) newErrors.breed = "Breed is required";
+    if (!formData.breed.trim()) newErrors.breed = "Breed is required";
     if (!gender) newErrors.gender = "Gender is required";
-    if (!location.trim()) newErrors.location = "Pet location is required";
-    if (!shortDesc.trim()) newErrors.shortDesc = "Short description is required";
+    if (!formData.location.trim()) newErrors.location = "Pet location is required";
+    if (!formData.shortDesc.trim()) newErrors.shortDesc = "Short description is required";
     if (!longDesc || longDesc === "<p></p>") newErrors.longDesc = "Long description is required";
     if (!imageUrl) newErrors.image = "Pet image is required";
-    return newErrors;
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      age: "",
+      location: "",
+      breed: "",
+      shortDesc: "",
+    });
+    setCategory(null);
+    setGender(null);
+    setVaccinated(false);
+    setImageUrl("");
+    setErrors({});
+    editor?.commands.clearContent();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
-      return;
-    }
+    
+    if (!validate()) return;
+    
+    setIsSubmitting(true);
 
     const now = new Date().toISOString();
-    const data = {
-      name: name.trim(),
-      age: age.trim(),
+    const petData = {
+      ...formData,
       image: imageUrl,
-      location: location.trim(),
       category: category.value,
-      breed: breed.trim(),
       gender: gender.value,
       vaccinated,
       isAdopted: false,
       adoptionStatus: "Available",
-      shortDescription: shortDesc.trim(),
-      longDescription: longDesc.trim(),
+      longDescription: longDesc,
       createdAt: now,
       updatedAt: now,
       addedBy: user.email,
     };
 
     try {
-      await axiosPublic.post("/adoptPet", data);
+      await axiosPublic.post("/adoptPet", petData);
+      
       Swal.fire({
         icon: "success",
         title: "Pet Added Successfully!",
-        text: `${data.name} is now available for adoption.`,
+        text: `${petData.name} is now available for adoption.`,
         background: currentTheme.card,
         color: currentTheme.text,
       });
 
-      // Clear form
-      setName("");
-      setAge("");
-      setCategory(null);
-      setLocation("");
-      setBreed("");
-      setGender(null);
-      setVaccinated(false);
-      setShortDesc("");
-      editor?.commands.setContent("");
-      setImageUrl("");
-      setErrors({});
+      resetForm();
     } catch (error) {
-      console.error("Error adding pet:", error.response?.data || error.message);
+      console.error("Error adding pet:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to add pet. Please try again.",
+        background: currentTheme.card,
+        color: currentTheme.text,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} transition-colors duration-300`}>
+    <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text}`}>
       <div className="container mx-auto px-4 py-8">
-        <div className={`max-w-2xl mx-auto ${currentTheme.card} rounded-xl shadow-lg overflow-hidden p-6 md:p-8 transition-all duration-300`}>
+        <div className={`max-w-2xl mx-auto ${currentTheme.card} rounded-xl shadow-lg p-6 md:p-8`}>
           <h2 className={`text-2xl font-bold mb-6 ${currentTheme.accent}`}>Add New Pet</h2>
           
           <form onSubmit={handleSubmit} noValidate>
             {/* Image Upload */}
             <div className="mb-6">
               <label className={`block mb-2 font-medium ${currentTheme.text}`}>
-                Pet Image
-                <span className="text-red-500">*</span>
+                Pet Image <span className="text-red-500">*</span>
               </label>
-              <div className={`border-2 border-dashed ${currentTheme.uploadBorder} rounded-lg p-4 text-center ${currentTheme.uploadHover} transition-colors`}>
+              <div className={`border-2 border-dashed ${currentTheme.uploadBorder} rounded-lg p-4 text-center ${currentTheme.uploadHover}`}>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="hidden"
                   id="petImage"
+                  disabled={uploading}
                 />
                 <label
                   htmlFor="petImage"
@@ -238,50 +341,76 @@ const AddPet = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="Pet Name"
-                value={name}
-                onChange={setName}
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
                 error={errors.name}
                 theme={currentTheme}
                 required
               />
               <Input
                 label="Pet Age"
-                value={age}
-                onChange={setAge}
+                name="age"
+                value={formData.age}
+                onChange={handleInputChange}
                 error={errors.age}
                 theme={currentTheme}
                 required
               />
-              <SelectField
-                label="Pet Category"
-                options={categories}
-                value={category}
-                onChange={setCategory}
-                error={errors.category}
-                theme={currentTheme}
-                required
-              />
+              
+              {/* Category Select - Matched to donation campaign styling */}
+              <div className="mb-5">
+                <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+                  Pet Category <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  options={petCategories}
+                  value={category}
+                  onChange={setCategory}
+                  placeholder="Select category"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  styles={currentTheme.select}
+                />
+                {errors.category && (
+                  <p className="text-red-500 text-sm mt-2">{errors.category}</p>
+                )}
+              </div>
+
               <Input
                 label="Breed"
-                value={breed}
-                onChange={setBreed}
+                name="breed"
+                value={formData.breed}
+                onChange={handleInputChange}
                 error={errors.breed}
                 theme={currentTheme}
                 required
               />
-              <SelectField
-                label="Gender"
-                options={genders}
-                value={gender}
-                onChange={setGender}
-                error={errors.gender}
-                theme={currentTheme}
-                required
-              />
+              
+              {/* Gender Select - Matched to donation campaign styling */}
+              <div className="mb-5">
+                <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+                  Gender <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  options={genderOptions}
+                  value={gender}
+                  onChange={setGender}
+                  placeholder="Select gender"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  styles={currentTheme.select}
+                />
+                {errors.gender && (
+                  <p className="text-red-500 text-sm mt-2">{errors.gender}</p>
+                )}
+              </div>
+
               <Input
                 label="Location"
-                value={location}
-                onChange={setLocation}
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
                 error={errors.location}
                 theme={currentTheme}
                 required
@@ -303,8 +432,9 @@ const AddPet = () => {
 
             <Input
               label="Short Description"
-              value={shortDesc}
-              onChange={setShortDesc}
+              name="shortDesc"
+              value={formData.shortDesc}
+              onChange={handleInputChange}
               error={errors.shortDesc}
               theme={currentTheme}
               textarea
@@ -314,14 +444,9 @@ const AddPet = () => {
             {/* Long Description with Tiptap */}
             <div className="mb-6">
               <label className={`block mb-2 font-medium ${currentTheme.text}`}>
-                Long Description
-                <span className="text-red-500">*</span>
+                Long Description <span className="text-red-500">*</span>
               </label>
-              <div
-                className={`rounded-lg ${currentTheme.input} ${
-                  errors.longDesc ? "border-red-500" : ""
-                }`}
-              >
+              <div className={`rounded-lg ${currentTheme.input} ${errors.longDesc ? "border-red-500" : ""}`}>
                 {editor && (
                   <EditorContent
                     editor={editor}
@@ -336,9 +461,10 @@ const AddPet = () => {
 
             <button
               type="submit"
-              className={`w-full py-3 px-4 ${currentTheme.button} text-white font-semibold rounded-lg hover:opacity-90 transition-opacity`}
+              disabled={isSubmitting || uploading}
+              className={`w-full py-3 px-4 ${currentTheme.button} text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              Add Pet
+              {isSubmitting ? "Adding..." : "Add Pet"}
             </button>
           </form>
         </div>
@@ -346,90 +472,5 @@ const AddPet = () => {
     </div>
   );
 };
-
-// Reusable Input Component
-const Input = ({ label, value, onChange, error, theme, textarea, required }) => (
-  <div className="mb-5">
-    <label className={`block mb-2 font-medium ${theme.text}`}>
-      {label}
-      {required && <span className="text-red-500">*</span>}
-    </label>
-    {textarea ? (
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${
-          error ? "border-red-500" : ""
-        }`}
-        rows="4"
-      />
-    ) : (
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${
-          error ? "border-red-500" : ""
-        }`}
-      />
-    )}
-    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-  </div>
-);
-
-// Reusable Select Component
-const SelectField = ({ label, options, value, onChange, error, theme, required }) => (
-  <div className="mb-5">
-    <label className={`block mb-2 font-medium ${theme.text}`}>
-      {label}
-      {required && <span className="text-red-500">*</span>}
-    </label>
-    <div className={`rounded-lg ${theme.input} ${error ? "border-red-500" : ""}`}>
-      <Select
-        options={options}
-        value={value}
-        onChange={onChange}
-        placeholder={`Select ${label.toLowerCase()}`}
-        styles={{
-          control: (base) => ({
-            ...base,
-            border: "none",
-            boxShadow: "none",
-            backgroundColor: "transparent",
-            color: theme.text === "text-gray-100" ? "#f3f4f6" : "#1f2937",
-          }),
-          singleValue: (base) => ({
-            ...base,
-            color: theme.text === "text-gray-100" ? "#f3f4f6" : "#1f2937",
-          }),
-          placeholder: (base) => ({
-            ...base,
-            color: theme.secondaryText === "text-gray-300" ? "#d1d5db" : "#4b5563",
-          }),
-          menu: (base) => ({
-            ...base,
-            backgroundColor: theme.card === "bg-gray-800" ? "#1f2937" : "#ffffff",
-            borderColor: theme.card === "bg-gray-800" ? "#374151" : "#e5e7eb",
-          }),
-          option: (base, { isFocused, isSelected }) => ({
-            ...base,
-            backgroundColor: isSelected
-              ? "#3b82f6"
-              : isFocused
-              ? theme.card === "bg-gray-800" ? "#374151" : "#f3f4f6"
-              : "transparent",
-            color: isSelected
-              ? "#ffffff"
-              : theme.text === "text-gray-100" ? "#f3f4f6" : "#1f2937",
-            ":active": {
-              backgroundColor: isSelected ? "#3b82f6" : theme.card === "bg-gray-800" ? "#4b5563" : "#e5e7eb",
-            },
-          }),
-        }}
-      />
-    </div>
-    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-  </div>
-);
 
 export default AddPet;
