@@ -13,6 +13,9 @@ const AllPets = () => {
   const { user, theme } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
   const [isAdmin] = useAdmin();
+  useEffect(() => {
+    document.title = "All Pets";
+  }, []);
 
   const themeStyles = {
     light: {
@@ -99,9 +102,11 @@ const AllPets = () => {
     try {
       const res = await axiosSecure.patch(`/isAdoptedTrue/${petId}`);
       if (res.data.modifiedCount > 0) {
-        setPets(pets.map(pet => 
-          pet._id === petId ? {...pet, adoptionStatus: "Adopted"} : pet
-        ));
+        setPets(
+          pets.map((pet) =>
+            pet._id === petId ? { ...pet, adoptionStatus: "Adopted" } : pet
+          )
+        );
         Swal.fire("Success!", "Pet status updated to Adopted.", "success");
       }
     } catch (error) {
@@ -114,9 +119,11 @@ const AllPets = () => {
     try {
       const res = await axiosSecure.patch(`/isAdoptedFalse/${petId}`);
       if (res.data.modifiedCount > 0) {
-        setPets(pets.map(pet => 
-          pet._id === petId ? {...pet, adoptionStatus: "Not Adopted"} : pet
-        ));
+        setPets(
+          pets.map((pet) =>
+            pet._id === petId ? { ...pet, adoptionStatus: "Not Adopted" } : pet
+          )
+        );
         Swal.fire("Success!", "Pet status updated to Not Adopted.", "success");
       }
     } catch (error) {
@@ -126,17 +133,25 @@ const AllPets = () => {
   };
   if (loading) return <Loading />;
 
-
-
   return (
-    <div className={`p-4 md:p-6 max-w-[95vw] mx-auto ${currentTheme.bg} ${currentTheme.text} min-h-screen`}>
-      <h2 className={`text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 text-center ${theme === 'light' ? 'text-indigo-700' : 'text-indigo-400'} tracking-wide`}>
+    <div
+      className={`p-4 md:p-6 max-w-[95vw] mx-auto ${currentTheme.bg} ${currentTheme.text} min-h-screen`}
+    >
+      <h2
+        className={`text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 text-center ${
+          theme === "light" ? "text-indigo-700" : "text-indigo-400"
+        } tracking-wide`}
+      >
         All Added Pets
       </h2>
 
-      <div className={`overflow-x-auto shadow-lg rounded-lg border ${currentTheme.card} ${currentTheme.border}`}>
+      <div
+        className={`overflow-x-auto shadow-lg rounded-lg border ${currentTheme.card} ${currentTheme.border}`}
+      >
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className={`${theme === 'light' ? 'bg-indigo-100' : 'bg-gray-700'}`}>
+          <thead
+            className={`${theme === "light" ? "bg-indigo-100" : "bg-gray-700"}`}
+          >
             <tr>
               <th className="px-3 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wider">
                 Image
@@ -176,11 +191,17 @@ const AllPets = () => {
             </tr>
           </thead>
 
-          <tbody className={`divide-y ${theme === 'light' ? 'divide-gray-200' : 'divide-gray-700'}`}>
+          <tbody
+            className={`divide-y ${
+              theme === "light" ? "divide-gray-200" : "divide-gray-700"
+            }`}
+          >
             {pets.map((pet) => (
               <tr
                 key={pet._id}
-                className={`${theme === 'light' ? 'hover:bg-indigo-50' : 'hover:bg-gray-700'} transition-colors duration-200`}
+                className={`${
+                  theme === "light" ? "hover:bg-indigo-50" : "hover:bg-gray-700"
+                } transition-colors duration-200`}
               >
                 <td className="px-3 py-4 whitespace-nowrap">
                   <img
@@ -192,9 +213,7 @@ const AllPets = () => {
                 <td className="px-3 py-4 whitespace-nowrap font-semibold">
                   {pet.name}
                 </td>
-                <td className="px-3 py-4 whitespace-nowrap">
-                  {pet.age}
-                </td>
+                <td className="px-3 py-4 whitespace-nowrap">{pet.age}</td>
                 <td className="px-3 py-4 whitespace-nowrap hidden sm:table-cell">
                   {pet.breed}
                 </td>
@@ -209,15 +228,23 @@ const AllPets = () => {
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-center">
                   {pet.vaccinated ? (
-                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                      theme === 'light' ? 'text-green-700 bg-green-100' : 'text-green-300 bg-green-900'
-                    }`}>
+                    <span
+                      className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                        theme === "light"
+                          ? "text-green-700 bg-green-100"
+                          : "text-green-300 bg-green-900"
+                      }`}
+                    >
                       Yes
                     </span>
                   ) : (
-                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                      theme === 'light' ? 'text-red-700 bg-red-100' : 'text-red-300 bg-red-900'
-                    }`}>
+                    <span
+                      className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                        theme === "light"
+                          ? "text-red-700 bg-red-100"
+                          : "text-red-300 bg-red-900"
+                      }`}
+                    >
                       No
                     </span>
                   )}
@@ -230,12 +257,12 @@ const AllPets = () => {
                         onClick={() => handleAdoptFalse(pet._id)}
                         className={`px-2 py-1 text-xs md:text-sm rounded-full border transition-colors duration-300 font-semibold ${
                           pet.adoptionStatus === "Not Adopted"
-                            ? theme === 'light' 
-                              ? "bg-yellow-400 text-white border-yellow-400" 
+                            ? theme === "light"
+                              ? "bg-yellow-400 text-white border-yellow-400"
                               : "bg-yellow-600 text-white border-yellow-600"
-                            : theme === 'light'
-                              ? "bg-white text-yellow-600 border-yellow-600 hover:bg-yellow-50"
-                              : "bg-gray-700 text-yellow-400 border-yellow-400 hover:bg-gray-600"
+                            : theme === "light"
+                            ? "bg-white text-yellow-600 border-yellow-600 hover:bg-yellow-50"
+                            : "bg-gray-700 text-yellow-400 border-yellow-400 hover:bg-gray-600"
                         }`}
                       >
                         Not Adopted
@@ -244,12 +271,12 @@ const AllPets = () => {
                         onClick={() => handleAdopted(pet._id)}
                         className={`px-2 py-1 text-xs md:text-sm rounded-full border transition-colors duration-300 font-semibold ${
                           pet.adoptionStatus === "Adopted"
-                            ? theme === 'light'
+                            ? theme === "light"
                               ? "bg-green-500 text-white border-green-500"
                               : "bg-green-600 text-white border-green-600"
-                            : theme === 'light'
-                              ? "bg-white text-green-600 border-green-600 hover:bg-green-50"
-                              : "bg-gray-700 text-green-400 border-green-400 hover:bg-gray-600"
+                            : theme === "light"
+                            ? "bg-white text-green-600 border-green-600 hover:bg-green-50"
+                            : "bg-gray-700 text-green-400 border-green-400 hover:bg-gray-600"
                         }`}
                       >
                         Adopted
@@ -259,12 +286,12 @@ const AllPets = () => {
                     <span
                       className={`px-2 py-1 text-xs md:text-sm rounded-full font-semibold ${
                         pet.adoptionStatus === "Adopted"
-                          ? theme === 'light'
+                          ? theme === "light"
                             ? "bg-green-100 text-green-700"
                             : "bg-green-900 text-green-300"
-                          : theme === 'light'
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-yellow-900 text-yellow-300"
+                          : theme === "light"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-yellow-900 text-yellow-300"
                       }`}
                     >
                       {pet.adoptionStatus}
@@ -282,8 +309,8 @@ const AllPets = () => {
                       <button
                         onClick={() => handleUpdate(pet._id)}
                         className={`px-2 py-1 text-xs md:text-sm rounded ${
-                          theme === 'light' 
-                            ? "bg-blue-600 text-white hover:bg-blue-700" 
+                          theme === "light"
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
                             : "bg-blue-500 text-white hover:bg-blue-600"
                         }`}
                       >
@@ -292,7 +319,7 @@ const AllPets = () => {
                       <button
                         onClick={() => handleDelete(pet._id)}
                         className={`px-2 py-1 text-xs md:text-sm rounded ${
-                          theme === 'light'
+                          theme === "light"
                             ? "bg-red-600 text-white hover:bg-red-700"
                             : "bg-red-500 text-white hover:bg-red-600"
                         }`}

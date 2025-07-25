@@ -75,6 +75,9 @@ const Users = () => {
       setUpdatingId(null);
     }
   };
+         useEffect(() => {
+        document.title = "Users";
+      }, []);
 
   return (
     <div

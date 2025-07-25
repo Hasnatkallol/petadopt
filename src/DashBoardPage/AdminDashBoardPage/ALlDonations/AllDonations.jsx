@@ -62,6 +62,9 @@ const AllDonations = () => {
 
     fetchAllDonations();
   }, [axiosSecure, user, isAdmin]);
+         useEffect(() => {
+      document.title = "All Donations";
+    }, []);
 
   const handleEdit = (id) => {
     navigate(`/dashboard/edit-donation/${id}`);

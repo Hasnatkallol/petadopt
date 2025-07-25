@@ -1,10 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import { useNavigate } from "react-router";
 
 const MyProfile = () => {
   const { user, theme } = useContext(FirebaseAuthContext);
   const navigate = useNavigate();
+
+    useEffect(() => {
+    document.title = "My Profile";
+  }, []);
 
   const themeStyles = {
     light: {

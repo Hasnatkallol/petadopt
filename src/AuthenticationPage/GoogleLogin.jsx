@@ -6,7 +6,8 @@ import useAxiosPublic from "../Hooks/useAxiosPublic";
 import { FcGoogle } from "react-icons/fc";
 
 const GoogleLogin = () => {
-  const { setUser, setLoading, signInWithGoogle, theme } = useContext(FirebaseAuthContext);
+  const { setUser, setLoading, signInWithGoogle, theme } =
+    useContext(FirebaseAuthContext);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,21 +15,34 @@ const GoogleLogin = () => {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    setLoading(true); // Optional: for global state
     try {
       const result = await signInWithGoogle();
-      setUser(result.user);
-      
+      const user = result.user;
+      setUser(user);
+
       const userInfo = {
-        name: result.user?.displayName,
-        image: result.user?.photoURL,
-        email: result.user?.email,
+        name: user?.displayName,
+        image: user?.photoURL,
+        email: user?.email,
         role: "user",
         created_at: new Date().toISOString(),
         last_log_in: new Date().toISOString(),
       };
 
-      await axiosPublic.post("/users", userInfo);
-      
+      console.log("Sending user info to backend:", userInfo);
+
+      try {
+        await axiosPublic.post("/users", userInfo);
+        console.log("User info saved successfully!");
+      } catch (apiError) {
+        if (apiError.response?.status === 409) {
+          console.warn("User already exists. Skipping insert.");
+        } else {
+          throw apiError; // Rethrow other errors
+        }
+      }
+
       Swal.fire({
         title: "Success!",
         text: "Signed in with Google",
@@ -36,20 +50,23 @@ const GoogleLogin = () => {
         background: theme === "dark" ? "#1E293B" : "#FFFFFF",
         color: theme === "dark" ? "#F8FAFC" : "#1E293B",
       });
-      
+
       navigate(location?.state?.from || "/");
     } catch (error) {
-      console.error("Google login error:", error);
+      console.error("Google login error:", error?.response?.data || error.message || error);
       Swal.fire({
         title: "Error",
-        text: error.message || "Failed to sign in with Google",
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to sign in with Google",
         icon: "error",
         background: theme === "dark" ? "#1E293B" : "#FFFFFF",
         color: theme === "dark" ? "#F8FAFC" : "#1E293B",
       });
     } finally {
       setIsLoading(false);
-      setLoading(false);
+      setLoading(false); // Optional: for global state
     }
   };
 
@@ -95,7 +112,7 @@ const GoogleLogin = () => {
       ) : (
         <>
           <FcGoogle className="text-xl" />
-          <span> Google</span>
+          <span>Google</span>
         </>
       )}
     </button>

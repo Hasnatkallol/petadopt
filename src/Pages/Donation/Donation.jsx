@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
+import Loading from "../../Shared/Loading";  
 
 const Donation = () => {
   const { theme } = useContext(FirebaseAuthContext);
@@ -8,8 +9,11 @@ const Donation = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [endReached, setEndReached] = useState(false);
+    useEffect(() => {
+    document.title = "Donation Compaigns";
+  }, []);
 
-  // Theme-based styles
+  // Theme styles (unchanged)
   const themeStyles = {
     light: {
       bg: "bg-gray-50",
@@ -18,7 +22,7 @@ const Donation = () => {
       cardText: "text-gray-700",
       button: "bg-blue-600 hover:bg-blue-700",
       loadingText: "text-gray-700",
-      border: "border-gray-200"
+      border: "border-gray-200",
     },
     dark: {
       bg: "bg-gray-900",
@@ -27,13 +31,11 @@ const Donation = () => {
       cardText: "text-gray-300",
       button: "bg-blue-500 hover:bg-blue-600",
       loadingText: "text-gray-300",
-      border: "border-gray-700"
-    }
+      border: "border-gray-700",
+    },
   };
 
   const currentTheme = themeStyles[theme] || themeStyles.light;
-
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const fetchCampaigns = async (pageNumber) => {
     const res = await fetch(
@@ -46,12 +48,16 @@ const Donation = () => {
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
         const data = await fetchCampaigns(1);
         setVisibleCampaigns(data);
         setPage(2);
+        if (data.length === 0) setEndReached(true);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
@@ -60,9 +66,6 @@ const Donation = () => {
     if (loading || endReached) return;
 
     setLoading(true);
-
-    await delay(4000); // wait 4 seconds before showing loading
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // show loading for 2s
 
     try {
       const data = await fetchCampaigns(page);
@@ -74,9 +77,9 @@ const Donation = () => {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -95,10 +98,17 @@ const Donation = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [loading, endReached, page]);
 
+  // Show Loading component ONLY on initial loading (when no campaigns yet)
+  if (loading && visibleCampaigns.length === 0) {
+    return <Loading />;
+  }
+
   return (
-    <div className={` py-8 ${currentTheme.bg} ${currentTheme.text}`}>
+    <div className={`py-8 ${currentTheme.bg} ${currentTheme.text}`}>
       <div className={`w-11/12 mx-auto`}>
-        <h2 className={`text-3xl font-semibold text-center mt-14 mb-8 ${currentTheme.text}`}>
+        <h2
+          className={`text-3xl font-semibold text-center mt-14 mb-8 ${currentTheme.text}`}
+        >
           Donation Campaigns
         </h2>
 
@@ -136,8 +146,11 @@ const Donation = () => {
         </div>
 
         <div className="flex justify-center mt-8">
-          {loading && (
-            <p className={`text-lg font-medium flex items-center space-x-2 ${currentTheme.loadingText}`}>
+          {/* Show bottom loading spinner only when loading more campaigns */}
+          {loading && visibleCampaigns.length > 0 && (
+            <p
+              className={`text-lg font-medium flex items-center space-x-2 ${currentTheme.loadingText}`}
+            >
               <svg
                 aria-hidden="true"
                 className="w-6 h-6 animate-spin"
@@ -162,6 +175,7 @@ const Donation = () => {
               <span>Loading more campaigns...</span>
             </p>
           )}
+
           {endReached && !loading && (
             <p className={`text-lg font-medium ${currentTheme.loadingText}`}>
               No more campaigns available

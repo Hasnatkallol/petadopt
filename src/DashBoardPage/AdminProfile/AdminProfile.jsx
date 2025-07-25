@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import { useNavigate } from "react-router";
 
@@ -40,6 +40,9 @@ const AdminProfile = () => {
   };
 
   const currentTheme = themeStyles[theme] || themeStyles.light;
+         useEffect(() => {
+        document.title = "Admin Profile";
+      }, []);
 
   return (
     <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} transition-colors duration-300`}>

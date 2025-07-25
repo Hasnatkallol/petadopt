@@ -44,6 +44,9 @@ const PetListing = () => {
   });
 
   const { ref, inView } = useInView();
+    useEffect(() => {
+    document.title = "Pet Listing";
+  }, []);
 
   useEffect(() => {
     if (inView && hasNextPage) {

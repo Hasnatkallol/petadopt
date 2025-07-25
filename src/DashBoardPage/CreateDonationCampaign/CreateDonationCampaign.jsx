@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Select from "react-select";
@@ -33,26 +33,27 @@ function CreateDonationCampaign() {
       bg: "bg-gray-50",
       text: "text-gray-800",
       card: "bg-white border border-gray-200",
-      input: "bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-400",
+      input:
+        "bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-400",
       error: "border-red-500 focus:ring-red-400",
       button: "bg-blue-600 hover:bg-blue-700",
       select: {
         control: (base) => ({
           ...base,
-          backgroundColor: 'white',
-          borderColor: '#d1d5db',
-          '&:hover': {
-            borderColor: '#d1d5db',
+          backgroundColor: "white",
+          borderColor: "#d1d5db",
+          "&:hover": {
+            borderColor: "#d1d5db",
           },
         }),
         menu: (base) => ({
           ...base,
-          backgroundColor: 'white',
+          backgroundColor: "white",
         }),
         option: (base, state) => ({
           ...base,
-          backgroundColor: state.isFocused ? '#f3f4f6' : 'white',
-          color: '#1f2937',
+          backgroundColor: state.isFocused ? "#f3f4f6" : "white",
+          color: "#1f2937",
         }),
       },
     },
@@ -60,27 +61,28 @@ function CreateDonationCampaign() {
       bg: "bg-gray-900",
       text: "text-gray-100",
       card: "bg-gray-800 border-gray-700",
-      input: "bg-gray-700 border-gray-600 focus:border-blue-400 focus:ring-blue-500",
+      input:
+        "bg-gray-700 border-gray-600 focus:border-blue-400 focus:ring-blue-500",
       error: "border-red-400 focus:ring-red-500",
       button: "bg-blue-700 hover:bg-blue-600",
       select: {
         control: (base) => ({
           ...base,
-          backgroundColor: '#374151',
-          borderColor: '#4b5563',
-          color: 'white',
-          '&:hover': {
-            borderColor: '#4b5563',
+          backgroundColor: "#374151",
+          borderColor: "#4b5563",
+          color: "white",
+          "&:hover": {
+            borderColor: "#4b5563",
           },
         }),
         menu: (base) => ({
           ...base,
-          backgroundColor: '#374151',
+          backgroundColor: "#374151",
         }),
         option: (base, state) => ({
           ...base,
-          backgroundColor: state.isFocused ? '#4b5563' : '#374151',
-          color: 'white',
+          backgroundColor: state.isFocused ? "#4b5563" : "#374151",
+          color: "white",
         }),
       },
     },
@@ -153,8 +155,8 @@ function CreateDonationCampaign() {
         icon: "success",
         title: "Pet Added Successfully!",
         text: `${data.petName} is now available for donation.`,
-        background: theme === 'dark' ? '#1f2937' : '#ffffff',
-        color: theme === 'dark' ? '#f3f4f6' : '#111827',
+        background: theme === "dark" ? "#1f2937" : "#ffffff",
+        color: theme === "dark" ? "#f3f4f6" : "#111827",
       });
     } catch (error) {
       console.error("Error adding pet:", error.response?.data || error.message);
@@ -162,11 +164,15 @@ function CreateDonationCampaign() {
         icon: "error",
         title: "Error",
         text: "Failed to create donation campaign.",
-        background: theme === 'dark' ? '#1f2937' : '#ffffff',
-        color: theme === 'dark' ? '#f3f4f6' : '#111827',
+        background: theme === "dark" ? "#1f2937" : "#ffffff",
+        color: theme === "dark" ? "#f3f4f6" : "#111827",
       });
     }
   };
+
+  useEffect(() => {
+    document.title = "Create Donation Compaigns";
+  }, []);
 
   return (
     <div className={`min-h-screen py-10 ${currentTheme.bg}`}>
@@ -181,7 +187,9 @@ function CreateDonationCampaign() {
 
           {/* Image Upload */}
           <div>
-            <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+            <label
+              className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+            >
               Pet Image
             </label>
             <input
@@ -194,9 +202,11 @@ function CreateDonationCampaign() {
               }`}
             />
             {uploading && (
-              <p className={`text-sm mt-1 ${
-                theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
-              }`}>
+              <p
+                className={`text-sm mt-1 ${
+                  theme === "dark" ? "text-blue-400" : "text-blue-600"
+                }`}
+              >
                 Uploading image...
               </p>
             )}
@@ -206,9 +216,11 @@ function CreateDonationCampaign() {
               </p>
             )}
             {imageUrl && !errors.petImage && (
-              <p className={`text-sm mt-1 ${
-                theme === 'dark' ? 'text-green-400' : 'text-green-600'
-              }`}>
+              <p
+                className={`text-sm mt-1 ${
+                  theme === "dark" ? "text-green-400" : "text-green-600"
+                }`}
+              >
                 Image uploaded successfully
               </p>
             )}
@@ -217,7 +229,9 @@ function CreateDonationCampaign() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Pet Name */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+              <label
+                className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+              >
                 Pet Name
               </label>
               <input
@@ -225,7 +239,7 @@ function CreateDonationCampaign() {
                 placeholder="Enter pet name"
                 className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                   errors.petName ? currentTheme.error : currentTheme.input
-                } ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+                } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
               />
               {errors.petName && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">
@@ -236,7 +250,9 @@ function CreateDonationCampaign() {
 
             {/* Maximum Donation Amount */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+              <label
+                className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+              >
                 Maximum Donation Amount
               </label>
               <input
@@ -247,8 +263,10 @@ function CreateDonationCampaign() {
                 })}
                 placeholder="Enter max donation amount"
                 className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-                  errors.maximumDonationAmount ? currentTheme.error : currentTheme.input
-                } ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+                  errors.maximumDonationAmount
+                    ? currentTheme.error
+                    : currentTheme.input
+                } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
               />
               {errors.maximumDonationAmount && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">
@@ -259,7 +277,9 @@ function CreateDonationCampaign() {
 
             {/* Goal */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+              <label
+                className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+              >
                 Goal
               </label>
               <input
@@ -271,7 +291,7 @@ function CreateDonationCampaign() {
                 placeholder="Enter goal amount"
                 className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                   errors.goal ? currentTheme.error : currentTheme.input
-                } ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+                } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
               />
               {errors.goal && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">
@@ -282,7 +302,9 @@ function CreateDonationCampaign() {
 
             {/* Category */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+              <label
+                className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+              >
                 Category
               </label>
               <Select
@@ -311,7 +333,9 @@ function CreateDonationCampaign() {
 
             {/* Last Donation Date */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+              <label
+                className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+              >
                 Last Donation Date
               </label>
               <input
@@ -320,8 +344,10 @@ function CreateDonationCampaign() {
                   required: "Last donation date is required",
                 })}
                 className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-                  errors.lastDonationDate ? currentTheme.error : currentTheme.input
-                } ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+                  errors.lastDonationDate
+                    ? currentTheme.error
+                    : currentTheme.input
+                } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
               />
               {errors.lastDonationDate && (
                 <p className="text-red-500 dark:text-red-400 text-sm mt-1">
@@ -333,7 +359,9 @@ function CreateDonationCampaign() {
 
           {/* Short Description */}
           <div>
-            <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+            <label
+              className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+            >
               Short Description
             </label>
             <input
@@ -342,8 +370,10 @@ function CreateDonationCampaign() {
               })}
               placeholder="Enter short description"
               className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-                errors.shortDescription ? currentTheme.error : currentTheme.input
-              } ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+                errors.shortDescription
+                  ? currentTheme.error
+                  : currentTheme.input
+              } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
             />
             {errors.shortDescription && (
               <p className="text-red-500 dark:text-red-400 text-sm mt-1">
@@ -354,7 +384,9 @@ function CreateDonationCampaign() {
 
           {/* Long Description */}
           <div>
-            <label className={`block text-sm font-medium mb-1 ${currentTheme.text}`}>
+            <label
+              className={`block text-sm font-medium mb-1 ${currentTheme.text}`}
+            >
               Long Description
             </label>
             <textarea
@@ -365,7 +397,7 @@ function CreateDonationCampaign() {
               rows={5}
               className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                 errors.longDescription ? currentTheme.error : currentTheme.input
-              } ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+              } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
             />
             {errors.longDescription && (
               <p className="text-red-500 dark:text-red-400 text-sm mt-1">
@@ -379,10 +411,10 @@ function CreateDonationCampaign() {
             type="submit"
             className={`w-full py-2 text-white font-medium rounded-lg transition duration-200 ${
               currentTheme.button
-            } ${uploading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            } ${uploading ? "opacity-70 cursor-not-allowed" : ""}`}
             disabled={uploading}
           >
-            {uploading ? 'Submitting...' : 'Submit'}
+            {uploading ? "Submitting..." : "Submit"}
           </button>
         </form>
       </div>

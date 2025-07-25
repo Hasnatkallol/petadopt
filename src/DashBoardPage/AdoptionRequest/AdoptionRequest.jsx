@@ -136,6 +136,9 @@ const AdoptionRequest = () => {
       });
     }
   };
+        useEffect(() => {
+      document.title = "Adoption Request";
+    }, []);
 
   return (
     <div className={`min-h-screen py-8 ${currentTheme.bg} ${currentTheme.text}`}>

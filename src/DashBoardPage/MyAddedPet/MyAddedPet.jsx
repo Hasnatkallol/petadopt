@@ -18,6 +18,9 @@ import Swal from "sweetalert2";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const MyAddedPet = () => {
+      useEffect(() => {
+    document.title = "My Added Pets";
+  }, []);
   const { user, theme } = useContext(FirebaseAuthContext);
   const [myPets, setMyPets] = useState([]);
   const [loading, setLoading] = useState(true);

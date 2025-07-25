@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import Select from "react-select";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -103,9 +103,7 @@ const Input = ({ label, name, value, onChange, error, theme, textarea, required 
         name={name}
         value={value}
         onChange={onChange}
-        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${
-          error ? "border-red-500" : ""
-        }`}
+        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${error ? "border-red-500" : ""}`}
         rows="4"
       />
     ) : (
@@ -114,9 +112,7 @@ const Input = ({ label, name, value, onChange, error, theme, textarea, required 
         name={name}
         value={value}
         onChange={onChange}
-        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${
-          error ? "border-red-500" : ""
-        }`}
+        className={`w-full px-4 py-2 rounded-lg ${theme.input} ${error ? "border-red-500" : ""}`}
       />
     )}
     {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
@@ -124,6 +120,10 @@ const Input = ({ label, name, value, onChange, error, theme, textarea, required 
 );
 
 const AddPet = () => {
+  useEffect(() => {
+    document.title = "Add Pet";
+  }, []);
+
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -139,11 +139,12 @@ const AddPet = () => {
   const [errors, setErrors] = useState({});
   const [uploading, setUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { user, theme } = useContext(FirebaseAuthContext);
   const axiosPublic = useAxiosPublic();
   const currentTheme = themeStyles[theme] || themeStyles.light;
 
+  // Editor initialized once, updates longDesc on change
   const editor = useEditor({
     extensions: [StarterKit],
     content: "",
@@ -152,6 +153,7 @@ const AddPet = () => {
     },
   });
 
+  // Cleanup editor on unmount
   useEffect(() => {
     return () => {
       editor?.destroy();
@@ -177,15 +179,19 @@ const AddPet = () => {
     setErrors(prev => ({ ...prev, image: null }));
 
     try {
-      const formData = new FormData();
-      formData.append("image", image);
+      const data = new FormData();
+      data.append("image", image);
 
       const res = await axios.post(
         `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBBKEY}`,
-        formData
+        data
       );
-      
-      setImageUrl(res.data.data.url);
+
+      if (res?.data?.data?.url) {
+        setImageUrl(res.data.data.url);
+      } else {
+        throw new Error("Invalid response from image server");
+      }
     } catch (err) {
       setErrors(prev => ({
         ...prev,
@@ -207,7 +213,7 @@ const AddPet = () => {
     if (!formData.shortDesc.trim()) newErrors.shortDesc = "Short description is required";
     if (!longDesc || longDesc === "<p></p>") newErrors.longDesc = "Long description is required";
     if (!imageUrl) newErrors.image = "Pet image is required";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -230,9 +236,9 @@ const AddPet = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
-    
+
     setIsSubmitting(true);
 
     const now = new Date().toISOString();
@@ -244,17 +250,16 @@ const AddPet = () => {
       vaccinated,
       isAdopted: false,
       adoptionStatus: "Available",
-     shortDescription: formData.shortDesc,
+      shortDescription: formData.shortDesc,
       longDescription: longDesc,
       createdAt: now,
       updatedAt: now,
       addedBy: user.email,
     };
-    console.log('all info', petData)
 
     try {
       await axiosPublic.post("/adoptPet", petData);
-      
+
       Swal.fire({
         icon: "success",
         title: "Pet Added Successfully!",
@@ -283,14 +288,16 @@ const AddPet = () => {
       <div className="container mx-auto px-4 py-8">
         <div className={`max-w-2xl mx-auto ${currentTheme.card} rounded-xl shadow-lg p-6 md:p-8`}>
           <h2 className={`text-2xl font-bold mb-6 ${currentTheme.accent}`}>Add New Pet</h2>
-          
+
           <form onSubmit={handleSubmit} noValidate>
             {/* Image Upload */}
             <div className="mb-6">
               <label className={`block mb-2 font-medium ${currentTheme.text}`}>
                 Pet Image <span className="text-red-500">*</span>
               </label>
-              <div className={`border-2 border-dashed ${currentTheme.uploadBorder} rounded-lg p-4 text-center ${currentTheme.uploadHover}`}>
+              <div
+                className={`border-2 border-dashed ${currentTheme.uploadBorder} rounded-lg p-4 text-center ${currentTheme.uploadHover}`}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -359,8 +366,8 @@ const AddPet = () => {
                 theme={currentTheme}
                 required
               />
-              
-              {/* Category Select - Matched to donation campaign styling */}
+
+              {/* Category Select */}
               <div className="mb-5">
                 <label className={`block mb-2 font-medium ${currentTheme.text}`}>
                   Pet Category <span className="text-red-500">*</span>
@@ -388,8 +395,8 @@ const AddPet = () => {
                 theme={currentTheme}
                 required
               />
-              
-              {/* Gender Select - Matched to donation campaign styling */}
+
+              {/* Gender Select */}
               <div className="mb-5">
                 <label className={`block mb-2 font-medium ${currentTheme.text}`}>
                   Gender <span className="text-red-500">*</span>
@@ -419,19 +426,20 @@ const AddPet = () => {
               />
             </div>
 
-            <div className="mt-6 mb-6 flex items-center">
-              <input
-                type="checkbox"
-                checked={vaccinated}
-                onChange={(e) => setVaccinated(e.target.checked)}
-                id="vaccinated"
-                className={`w-4 h-4 rounded ${currentTheme.checkbox} ${currentTheme.accent}`}
-              />
-              <label htmlFor="vaccinated" className={`ml-2 ${currentTheme.text}`}>
-                Vaccinated
+            {/* Vaccinated Checkbox */}
+            <div className="mb-6">
+              <label className={`inline-flex items-center ${currentTheme.text}`}>
+                <input
+                  type="checkbox"
+                  checked={vaccinated}
+                  onChange={() => setVaccinated(prev => !prev)}
+                  className={`form-checkbox h-5 w-5 rounded ${currentTheme.checkbox}`}
+                />
+                <span className="ml-2">Vaccinated</span>
               </label>
             </div>
 
+            {/* Short Description */}
             <Input
               label="Short Description"
               name="shortDesc"
@@ -443,30 +451,33 @@ const AddPet = () => {
               required
             />
 
-            {/* Long Description with Tiptap */}
+            {/* Long Description - TipTap Editor */}
             <div className="mb-6">
               <label className={`block mb-2 font-medium ${currentTheme.text}`}>
                 Long Description <span className="text-red-500">*</span>
               </label>
-              <div className={`rounded-lg ${currentTheme.input} ${errors.longDesc ? "border-red-500" : ""}`}>
-                {editor && (
-                  <EditorContent
-                    editor={editor}
-                    className="min-h-[200px] p-3 focus:outline-none"
-                  />
-                )}
+              <div
+                className={`${currentTheme.input} rounded-lg min-h-[150px] p-3`}
+                style={{ borderWidth: errors.longDesc ? "2px" : "1px" }}
+              >
+                <EditorContent editor={editor} />
               </div>
               {errors.longDesc && (
                 <p className="text-red-500 text-sm mt-2">{errors.longDesc}</p>
               )}
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting || uploading}
-              className={`w-full py-3 px-4 ${currentTheme.button} text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`w-full py-3 rounded-lg text-white font-semibold ${
+                isSubmitting || uploading
+                  ? "opacity-50 cursor-not-allowed"
+                  : currentTheme.button
+              }`}
             >
-              {isSubmitting ? "Adding..." : "Add Pet"}
+              {isSubmitting ? "Submitting..." : "Add Pet"}
             </button>
           </form>
         </div>

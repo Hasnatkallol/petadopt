@@ -3,6 +3,7 @@ import { FirebaseAuthContext } from "../../Firebase/FirebaseAuthContext";
 import { useNavigate } from "react-router-dom";
 import { Dialog } from "@headlessui/react";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import Swal from "sweetalert2";
 
 const MyDonationCampaign = () => {
   const { user, theme } = useContext(FirebaseAuthContext);
@@ -118,10 +119,13 @@ const MyDonationCampaign = () => {
       });
     }
   };
+         useEffect(() => {
+        document.title = "My Donation Compaigns";
+      }, []);
 
   return (
     <div className={`min-h-screen p-4 md:p-6 ${currentTheme.bg} ${currentTheme.text}`}>
-      <h1 className="text-2xl font-bold mb-6">My Donation Campaigns</h1>
+      <h1 className="text-2xl text-center font-bold mb-6">My Donation Campaigns</h1>
 
       {loading && (
         <div className="flex justify-center items-center py-12">
@@ -147,15 +151,17 @@ const MyDonationCampaign = () => {
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <div className={`rounded-lg shadow-md overflow-hidden ${currentTheme.card}`}>
+      <div className={`rounded-lg shadow-md overflow-hidden ${currentTheme.card}`}>
+        <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
               <tr className={currentTheme.tableHeader}>
-                <th className="px-4 py-3 text-left">Pet</th>
-                <th className="px-4 py-3 text-left hidden md:table-cell">Max Donation</th>
-                <th className="px-4 py-3 text-left">Progress</th>
-                <th className="px-4 py-3 text-left">Actions</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Pet</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Max Donation</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Goal</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Progress</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -167,61 +173,55 @@ const MyDonationCampaign = () => {
 
                 return (
                   <tr key={pet._id} className={currentTheme.tableRow}>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
                         <img
                           src={pet.petImage}
                           alt={pet.petName}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover mx-auto sm:mx-0"
+                          className="w-10 h-10 rounded-full object-cover"
                         />
-                        <div className="text-center sm:text-left">
-                          <div className="font-medium">{pet.petName}</div>
-                          {pet.isPaused && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              currentTheme.status.paused
-                            }`}>
-                              Paused
-                            </span>
-                          )}
-                        </div>
+                        <span className="font-medium">{pet.petName}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       ${pet.maximumDonationAmount}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="w-full relative">
-                        <div className={`w-full rounded h-2 md:h-3 ${
-                          currentTheme.progressBg
-                        }`}>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      ${pet.goal}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="w-full">
+                        <div className={`w-full rounded h-2 ${currentTheme.progressBg}`}>
                           <div
-                            className={`h-2 md:h-3 rounded ${
-                              currentTheme.progressBar
-                            }`}
+                            className={`h-2 rounded ${currentTheme.progressBar}`}
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
-                        <div className="flex justify-between text-xs mt-1">
-                          <span>${pet.donatedAmount}</span>
-                          <span>${pet.goal}</span>
+                        <div className="text-xs mt-1">
+                          ${pet.donatedAmount} / ${pet.goal} ({progress}%)
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {pet.isPaused ? (
+                        <span className={`px-2 py-1 text-xs rounded-full ${currentTheme.status.paused}`}>
+                          Paused
+                        </span>
+                      ) : (
+                        <span className="text-green-500">Active</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => handleEdit(pet._id)}
-                          className={`px-3 py-1 text-white rounded text-sm ${
-                            currentTheme.button.edit
-                          }`}
+                          className={`px-3 py-1 text-white rounded text-sm ${currentTheme.button.edit}`}
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleViewDonators(pet._id, pet.petName)}
-                          className={`px-3 py-1 text-white rounded text-sm ${
-                            currentTheme.button.view
-                          }`}
+                          className={`px-3 py-1 text-white rounded text-sm ${currentTheme.button.view}`}
                         >
                           Donators
                         </button>
@@ -231,7 +231,7 @@ const MyDonationCampaign = () => {
                             pet.isPaused ? currentTheme.button.unpause : currentTheme.button.pause
                           }`}
                         >
-                          {pet.isPaused ? "Unpaused" : "Pause"}
+                          {pet.isPaused ? "Resume" : "Pause"}
                         </button>
                       </div>
                     </td>
@@ -275,9 +275,9 @@ const MyDonationCampaign = () => {
                       <span className="truncate text-sm">
                         {donor.donorEmail}
                       </span>
-                      <span className="text-right font-medium ${
+                      <span className={`text-right font-medium ${
                         theme === 'dark' ? 'text-green-400' : 'text-green-600'
-                      }">
+                      }`}>
                         ${donor.amount}
                       </span>
                     </div>

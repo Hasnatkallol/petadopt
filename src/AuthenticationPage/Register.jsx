@@ -14,18 +14,16 @@ const Register = () => {
   useEffect(() => {
     document.title = "SignUp";
   }, []);
-  const axiosPublic = useAxiosPublic();
 
+  const axiosPublic = useAxiosPublic();
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [profilePic, setProfilePic] = useState("");
+  const [loadingImage, setLoadingImage] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { createUser, userProfileUpdate, setLoading, theme } =
     useContext(FirebaseAuthContext);
 
-  // Theme-based colors
   const themeColors = {
     light: {
       bg: "#F1F5F9",
@@ -59,34 +57,22 @@ const Register = () => {
 
   const currentTheme = themeColors[theme];
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSuccessMessage(false);
     setErrorMessage("");
 
     const name = e.target.name.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
+    const imageFile = e.target.image.files[0];
 
-    // Password validation
+    // Validate password
     const passwordValidations = [
-      {
-        regex: /(?=.*\d)/,
-        message: "Password must contain at least one number.",
-      },
-      {
-        regex: /(?=.*[a-z])/,
-        message: "Password must contain at least one lowercase letter.",
-      },
-      {
-        regex: /(?=.*[A-Z])/,
-        message: "Password must contain at least one uppercase letter.",
-      },
-      {
-        regex: /.{8,}/,
-        message: "Password must be at least 8 characters long.",
-      },
+      { regex: /(?=.*\d)/, message: "Password must contain at least one number." },
+      { regex: /(?=.*[a-z])/, message: "Password must contain at least one lowercase letter." },
+      { regex: /(?=.*[A-Z])/, message: "Password must contain at least one uppercase letter." },
+      { regex: /.{8,}/, message: "Password must be at least 8 characters long." },
     ];
 
     for (const validation of passwordValidations) {
@@ -103,71 +89,67 @@ const Register = () => {
       }
     }
 
-    createUser(email, password)
-      .then(async (userCredential) => {
-        // Send to database
-        const userInfo = {
-          email: email,
-          name: name,
-          image: profilePic,
-          role: "user",
-          created_at: new Date().toISOString(),
-          last_log_in: new Date().toISOString(),
-        };
-
-        await axiosPublic.post("/users", userInfo);
-
-        // Firebase profile update
-        await userProfileUpdate({
-          displayName: name,
-          photoURL: profilePic,
-        });
-
-        Swal.fire({
-          title: "Success!",
-          text: "Successfully registered!",
-          icon: "success",
-          background: currentTheme.cardBg,
-          color: currentTheme.text,
-        });
-        
-        navigate(location.state || "/");
-      })
-      .catch((error) => {
-        setErrorMessage(error.message);
-        Swal.fire({
-          title: "Error",
-          text: error.message,
-          icon: "error",
-          background: currentTheme.cardBg,
-          color: currentTheme.text,
-        });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const handleImageUpload = async (e) => {
-    const image = e.target.files[0];
-    const formData = new FormData();
-    formData.append("image", image);
-
     try {
+      // Upload image
+      setLoadingImage(true);
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
       const res = await fetch(
         `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBBKEY}`,
-        { body: formData, method: "post" }
+        {
+          method: "POST",
+          body: formData,
+        }
       );
       const data = await res.json();
-      setProfilePic(data.data.url);
+      const profilePic = data.data.url;
+      setLoadingImage(false);
+
+      // Register user
+      const userCredential = await createUser(email, password);
+
+      // Save to database
+      const userInfo = {
+        email,
+        name,
+        image: profilePic,
+        role: "user",
+        created_at: new Date().toISOString(),
+        last_log_in: new Date().toISOString(),
+      };
+      await axiosPublic.post("/users", userInfo);
+
+      // Update Firebase profile
+      await userProfileUpdate({ displayName: name, photoURL: profilePic });
+
+      Swal.fire({
+        title: "Success!",
+        text: "Successfully registered!",
+        icon: "success",
+        background: currentTheme.cardBg,
+        color: currentTheme.text,
+      });
+
+      navigate(location.state || "/");
     } catch (error) {
-      console.error("Image upload failed:", error);
+      console.error(error);
+      setErrorMessage(error.message);
+      Swal.fire({
+        title: "Error",
+        text: error.message,
+        icon: "error",
+        background: currentTheme.cardBg,
+        color: currentTheme.text,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div
-      className=" mt-15 flex items-center justify-center p-4 transition-colors duration-300"
+      className="mt-15 flex items-center justify-center p-4 transition-colors duration-300"
       style={{ backgroundColor: currentTheme.bg }}
     >
       <div className="w-full max-w-6xl flex flex-col md:flex-row rounded-xl overflow-hidden shadow-2xl">
@@ -190,7 +172,7 @@ const Register = () => {
                 <input
                   name="name"
                   type="text"
-                  className="w-full p-3 rounded-lg transition-all duration-200 focus:ring-2 focus:outline-none"
+                  className="w-full p-3 rounded-lg focus:ring-2 focus:outline-none"
                   style={{
                     backgroundColor: currentTheme.inputBg,
                     borderColor: currentTheme.border,
@@ -206,12 +188,11 @@ const Register = () => {
                 <input
                   name="image"
                   type="file"
-                  className="w-full p-2 rounded-lg transition-all duration-200 focus:ring-2 focus:outline-none"
+                  className="w-full p-2 rounded-lg focus:ring-2 focus:outline-none"
                   style={{
                     backgroundColor: currentTheme.inputBg,
                     borderColor: currentTheme.border,
                   }}
-                  onChange={handleImageUpload}
                   required
                 />
               </div>
@@ -222,7 +203,7 @@ const Register = () => {
                 <input
                   name="email"
                   type="email"
-                  className="w-full p-3 rounded-lg transition-all duration-200 focus:ring-2 focus:outline-none"
+                  className="w-full p-3 rounded-lg focus:ring-2 focus:outline-none"
                   style={{
                     backgroundColor: currentTheme.inputBg,
                     borderColor: currentTheme.border,
@@ -239,7 +220,7 @@ const Register = () => {
                   <input
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    className="w-full p-3 rounded-lg transition-all duration-200 focus:ring-2 focus:outline-none pr-10"
+                    className="w-full p-3 rounded-lg pr-10 focus:ring-2 focus:outline-none"
                     style={{
                       backgroundColor: currentTheme.inputBg,
                       borderColor: currentTheme.border,
@@ -265,33 +246,22 @@ const Register = () => {
               {/* Register Button */}
               <button
                 type="submit"
-                className="w-full py-3 px-4 rounded-lg font-semibold transition-colors duration-200 hover:shadow-md mt-4"
+                disabled={loadingImage}
+                className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors duration-200 hover:shadow-md mt-4 ${
+                  loadingImage ? "opacity-50 cursor-not-allowed" : ""
+                }`}
                 style={{
                   backgroundColor: currentTheme.buttonBg,
                   color: theme === "light" ? "#1E293B" : "#0F172A",
                 }}
-                onMouseOver={(e) =>
-                  (e.target.style.backgroundColor = currentTheme.buttonHover)
-                }
-                onMouseOut={(e) =>
-                  (e.target.style.backgroundColor = currentTheme.buttonBg)
-                }
               >
-                Register
+                {loadingImage ? "Uploading Image..." : "Register"}
               </button>
 
-              {/* Error/Success Messages */}
+              {/* Error Message */}
               {errorMessage && (
                 <p className="text-center" style={{ color: currentTheme.error }}>
                   {errorMessage}
-                </p>
-              )}
-              {successMessage && (
-                <p
-                  className="text-center"
-                  style={{ color: currentTheme.success }}
-                >
-                  Successfully Signed Up
                 </p>
               )}
             </form>
@@ -302,10 +272,7 @@ const Register = () => {
                 className="flex-grow border-t"
                 style={{ borderColor: currentTheme.border }}
               ></div>
-              <span
-                className="mx-4 text-sm"
-                style={{ color: currentTheme.text }}
-              >
+              <span className="mx-4 text-sm" style={{ color: currentTheme.text }}>
                 OR CONTINUE WITH
               </span>
               <div
@@ -315,10 +282,11 @@ const Register = () => {
             </div>
 
             {/* Social Logins */}
-             <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <GoogleLogin theme={theme} currentTheme={currentTheme} />
               <GitHubLogin theme={theme} currentTheme={currentTheme} />
             </div>
+
             {/* Login Link */}
             <div className="mt-8 text-center">
               <span style={{ color: currentTheme.text }}>
