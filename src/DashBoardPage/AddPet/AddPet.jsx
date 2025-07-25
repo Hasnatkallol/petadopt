@@ -244,11 +244,13 @@ const AddPet = () => {
       vaccinated,
       isAdopted: false,
       adoptionStatus: "Available",
+     shortDescription: formData.shortDesc,
       longDescription: longDesc,
       createdAt: now,
       updatedAt: now,
       addedBy: user.email,
     };
+    console.log('all info', petData)
 
     try {
       await axiosPublic.post("/adoptPet", petData);

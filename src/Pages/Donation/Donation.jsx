@@ -37,7 +37,7 @@ const Donation = () => {
 
   const fetchCampaigns = async (pageNumber) => {
     const res = await fetch(
-      `http://localhost:5000/donationPetDb?page=${pageNumber}&limit=9`,
+      `https://petadopt-henna.vercel.app/donationPetDb?page=${pageNumber}&limit=9`,
       { credentials: "include" }
     );
     if (!res.ok) throw new Error("Failed to fetch");

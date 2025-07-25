@@ -51,7 +51,7 @@ export const router = createBrowserRouter([
         path: "petsListing/:id",
         element: <DetailsPetListing></DetailsPetListing>,
         loader: ({ params }) =>
-          fetch(`http://localhost:5000/adoptPet/${params.id}`, {
+          fetch(`https://petadopt-henna.vercel.app/adoptPet/${params.id}`, {
             credentials: "include",
           }),
         hydrateFallbackElement: <Loading></Loading>,
@@ -65,7 +65,7 @@ export const router = createBrowserRouter([
         path: "donations/:id",
         element: <DonationDetails></DonationDetails>,
         loader: ({ params }) =>
-          fetch(`http://localhost:5000/donationPetDb/${params.id}`, {
+          fetch(`https://petadopt-henna.vercel.app/donationPetDb/${params.id}`, {
             credentials: "include",
           }),
         hydrateFallbackElement: <Loading></Loading>,
@@ -154,7 +154,7 @@ export const router = createBrowserRouter([
       {
         path: "update/:id",
         loader: ({ params }) =>
-          fetch(`http://localhost:5000/adoptPet/${params.id}`, {
+          fetch(`https://petadopt-henna.vercel.app/adoptPet/${params.id}`, {
             credentials: "include",
           }),
         element: (
@@ -176,7 +176,7 @@ export const router = createBrowserRouter([
       {
         path: "update/:id",
         loader: ({ params }) =>
-          fetch(`http://localhost:5000/adoptPet/${params.id}`, {
+          fetch(`https://petadopt-henna.vercel.app/adoptPet/${params.id}`, {
             credentials: "include",
           }),
         element: (
@@ -216,7 +216,7 @@ export const router = createBrowserRouter([
       {
         path: "edit-donation/:id",
         loader: ({ params }) =>
-          fetch(`http://localhost:5000/donationPetDb/${params.id}`, {
+          fetch(`https://petadopt-henna.vercel.app/donationPetDb/${params.id}`, {
             credentials: "include",
           }),
         element: (

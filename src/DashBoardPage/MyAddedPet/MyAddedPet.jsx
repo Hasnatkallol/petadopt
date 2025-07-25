@@ -63,7 +63,7 @@ const MyAddedPet = () => {
     setLoading(true);
     setErrmsg("");
     try {
-      const res = await axiosSecure.get(`/adoptPet?email=${user.email}`);
+      const res = await axiosSecure.get(`/myPetListing?email=${user.email}`);
       setMyPets(res.data?.pets || []);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -77,6 +77,7 @@ const MyAddedPet = () => {
   useEffect(() => {
     fetchPets();
   }, [fetchPets]);
+  console.log('mt added pets',myPets)
 
   const handleDelete = useCallback(
     async (_id) => {
