@@ -6,124 +6,118 @@ import { FirebaseAuthContext } from "../Firebase/FirebaseAuthContext";
 const Loading = () => {
   const { theme } = useContext(FirebaseAuthContext);
 
-  const baseColor = theme === "dark" ? "#2d3748" : "#e2e8f0"; // dark: gray-800, light: gray-300
-  const highlightColor = theme === "dark" ? "#4a5568" : "#f1f5f9"; // dark: gray-700, light: gray-100
+  const baseColor = theme === "dark" ? "#2d3748" : "#e2e8f0"; // gray-800 / gray-300
+  const highlightColor = theme === "dark" ? "#4a5568" : "#f1f5f9"; // gray-700 / gray-100
 
   return (
     <div
-      className={`flex flex-col items-center justify-center min-h-screen px-6 py-12 ${
+      className={`flex flex-col items-center justify-start min-h-screen px-4 py-10 ${
         theme === "dark" ? "bg-gray-900" : "bg-white"
       }`}
     >
-      {/* Title Skeleton */}
+      {/* Title */}
       <Skeleton
-        width={280}
+        width={260}
         height={36}
         baseColor={baseColor}
         highlightColor={highlightColor}
-        style={{ borderRadius: "8px" }}
+        className="rounded-md"
       />
 
-      {/* Subtitle Skeleton */}
+      {/* Subtitle */}
       <Skeleton
-        width={180}
+        width={160}
         height={20}
         baseColor={baseColor}
         highlightColor={highlightColor}
-        style={{ borderRadius: "6px", marginTop: 12 }}
+        className="mt-3 rounded-md"
       />
 
-      {/* Large gap */}
-      <div style={{ height: 40 }} />
+      {/* Spacer */}
+      <div className="h-10" />
 
-      {/* Table Skeleton */}
-      <div className="w-full max-w-5xl">
-        {/* Table Header Skeleton */}
-        <div className="flex mb-4 gap-6">
+      {/* Content Table */}
+      <div className="w-full max-w-6xl space-y-6">
+        {/* Table Header */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-2">
           {[...Array(5)].map((_, i) => (
             <Skeleton
               key={i}
               height={24}
               baseColor={baseColor}
               highlightColor={highlightColor}
-              style={{ flex: 1, borderRadius: "6px" }}
+              className="rounded-md"
             />
           ))}
         </div>
 
-        {/* Table Rows Skeleton */}
-        <div className="flex flex-col gap-5">
+        {/* Table Rows */}
+        <div className="space-y-6">
           {[...Array(6)].map((_, rowIndex) => (
             <div
               key={rowIndex}
-              className="flex items-center gap-6"
-              style={{ width: "100%" }}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-center"
             >
               {/* Avatar + Name */}
-              <div className="flex items-center gap-4" style={{ flex: 1 }}>
+              <div className="flex items-center gap-4">
                 <Skeleton
                   circle
-                  width={48}
-                  height={48}
+                  width={40}
+                  height={40}
                   baseColor={baseColor}
                   highlightColor={highlightColor}
                 />
                 <Skeleton
                   width={100}
-                  height={20}
+                  height={16}
                   baseColor={baseColor}
                   highlightColor={highlightColor}
-                  style={{ borderRadius: "6px" }}
+                  className="rounded-md"
                 />
               </div>
 
               {/* Owner */}
               <Skeleton
-                width={120}
                 height={16}
                 baseColor={baseColor}
                 highlightColor={highlightColor}
-                style={{ flex: 1, borderRadius: "6px" }}
+                className="rounded-md w-3/4"
               />
 
               {/* Max Donation */}
               <Skeleton
-                width={80}
                 height={16}
                 baseColor={baseColor}
                 highlightColor={highlightColor}
-                style={{ flex: 1, borderRadius: "6px" }}
-                className="hidden sm:block"
+                className="rounded-md w-2/3 hidden md:block"
               />
 
-              {/* Progress */}
-              <div style={{ flex: 1 }}>
+              {/* Progress Bar */}
+              <div className="space-y-2 w-full">
                 <Skeleton
-                  width="100%"
                   height={16}
                   baseColor={baseColor}
                   highlightColor={highlightColor}
-                  style={{ borderRadius: "6px" }}
+                  className="rounded-md w-full"
                 />
                 <Skeleton
-                  width={120}
                   height={12}
                   baseColor={baseColor}
                   highlightColor={highlightColor}
-                  style={{ borderRadius: "6px", marginTop: 6 }}
+                  className="rounded-md w-1/3"
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3" style={{ flex: 1 }}>
+              <div className="flex gap-2">
                 {[...Array(3)].map((_, i) => (
                   <Skeleton
                     key={i}
-                    width={50}
+                    width={48}
                     height={32}
                     baseColor={baseColor}
                     highlightColor={highlightColor}
-                    style={{ borderRadius: "6px" }}
+                    className="rounded-md"
                   />
                 ))}
               </div>

@@ -19,9 +19,11 @@ import Loading from "../../Shared/Loading";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAdmin, adminLoading] = useAdmin();
-  const { theme } = useContext(FirebaseAuthContext);
+  const { user, theme } = useContext(FirebaseAuthContext);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  // Wait for auth before running admin check
+  const [isAdmin, adminLoading] = useAdmin();
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,6 +39,9 @@ const DashboardLayout = () => {
   const closeSidebar = () => {
     if (isMobile) setSidebarOpen(false);
   };
+
+  // Wait for user context and admin status to load
+  if (!user || adminLoading) return <Loading />;
 
   const navLinks = [
     {
@@ -100,8 +105,6 @@ const DashboardLayout = () => {
       show: isAdmin,
     },
   ];
-
-  if (adminLoading) return <Loading />;
 
   return (
     <div className={`min-h-screen flex flex-col ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>

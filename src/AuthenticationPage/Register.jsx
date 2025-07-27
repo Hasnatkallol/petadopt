@@ -67,7 +67,7 @@ const Register = () => {
     const password = e.target.password.value;
     const imageFile = e.target.image.files[0];
 
-    // Validate password
+    // Password validation
     const passwordValidations = [
       { regex: /(?=.*\d)/, message: "Password must contain at least one number." },
       { regex: /(?=.*[a-z])/, message: "Password must contain at least one lowercase letter." },
@@ -89,27 +89,74 @@ const Register = () => {
       }
     }
 
+    // Check if image is selected
+    if (!imageFile) {
+      Swal.fire({
+        title: "No Image Selected",
+        text: "Please select a profile picture before registering.",
+        icon: "warning",
+        background: currentTheme.cardBg,
+        color: currentTheme.text,
+      });
+      setLoading(false);
+      return;
+    }
+
+    const imgbbKey = import.meta.env.VITE_IMGBBKEY;
+    if (!imgbbKey) {
+      Swal.fire({
+        title: "Missing API Key",
+        text: "Image upload API key is missing. Please contact support.",
+        icon: "error",
+        background: currentTheme.cardBg,
+        color: currentTheme.text,
+      });
+      setLoading(false);
+      return;
+    }
+
+    let profilePic = "";
+
+    // Upload image
     try {
-      // Upload image
       setLoadingImage(true);
       const formData = new FormData();
       formData.append("image", imageFile);
 
       const res = await fetch(
-        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBBKEY}`,
+        `https://api.imgbb.com/1/upload?key=${imgbbKey}`,
         {
           method: "POST",
           body: formData,
         }
       );
-      const data = await res.json();
-      const profilePic = data.data.url;
-      setLoadingImage(false);
 
-      // Register user
+      const data = await res.json();
+      if (!data.success || !data.data?.url) {
+        throw new Error("Image upload failed. Please try again.");
+      }
+
+      profilePic = data.data.url;
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        title: "Image Upload Error",
+        text: err.message,
+        icon: "error",
+        background: currentTheme.cardBg,
+        color: currentTheme.text,
+      });
+      setLoading(false);
+      setLoadingImage(false);
+      return;
+    } finally {
+      setLoadingImage(false);
+    }
+
+    // Proceed with registration
+    try {
       const userCredential = await createUser(email, password);
 
-      // Save to database
       const userInfo = {
         email,
         name,
@@ -120,7 +167,6 @@ const Register = () => {
       };
       await axiosPublic.post("/users", userInfo);
 
-      // Update Firebase profile
       await userProfileUpdate({ displayName: name, photoURL: profilePic });
 
       Swal.fire({

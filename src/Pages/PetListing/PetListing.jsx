@@ -44,7 +44,7 @@ const PetListing = () => {
   });
 
   const { ref, inView } = useInView();
-    useEffect(() => {
+  useEffect(() => {
     document.title = "Pet Listing";
   }, []);
 
@@ -130,12 +130,16 @@ const PetListing = () => {
     }),
   };
 
+  // ✅ Added additional static categories
   const categoryOptions = [
     { value: "", label: "All Pets" },
     ...categories.map((cat) => ({
       value: cat.name.toLowerCase(),
       label: cat.name,
     })),
+    { value: "fish", label: "Fish" },
+    { value: "bird", label: "Bird" },
+    { value: "others", label: "Others" },
   ];
 
   if (isLoading) {
@@ -178,8 +182,6 @@ const PetListing = () => {
               Browse our adorable pets waiting for their forever homes
             </p>
           </div>
-
- 
 
           {/* Search & Category Filters */}
           <motion.div
