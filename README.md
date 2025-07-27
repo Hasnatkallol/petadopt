@@ -9,7 +9,7 @@
 
 ## 🔗 Live URL
 
-👉 [Visit Live Site](https://friendly-phoenix-7d929b.netlify.app/)
+👉 [Visit Live Site](https://assignment10-b0bdd.web.app/)
 
 ---
 
