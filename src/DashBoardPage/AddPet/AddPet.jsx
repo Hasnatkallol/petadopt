@@ -23,6 +23,11 @@ const genderOptions = [
   { value: "Unknown", label: "Unknown" },
 ];
 
+const ageUnits = [
+  { value: "months", label: "Months" },
+  { value: "years", label: "Years" },
+];
+
 const themeStyles = {
   light: {
     bg: "bg-gray-50",
@@ -92,7 +97,7 @@ const themeStyles = {
 };
 
 // Reusable Input Component
-const Input = ({ label, name, value, onChange, error, theme, textarea, required }) => (
+const Input = ({ label, name, value, onChange, error, theme, textarea, required, type = "text" }) => (
   <div className="mb-5">
     <label className={`block mb-2 font-medium ${theme.text}`}>
       {label}
@@ -108,7 +113,7 @@ const Input = ({ label, name, value, onChange, error, theme, textarea, required 
       />
     ) : (
       <input
-        type="text"
+        type={type}
         name={name}
         value={value}
         onChange={onChange}
@@ -126,7 +131,8 @@ const AddPet = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    age: "",
+    ageNumber: "",
+    ageUnit: "",
     location: "",
     breed: "",
     shortDesc: "",
@@ -168,6 +174,13 @@ const AddPet = () => {
     }));
   };
 
+  const handleAgeUnitChange = (selectedOption) => {
+    setFormData(prev => ({
+      ...prev,
+      ageUnit: selectedOption.value
+    }));
+  };
+
   const handleImageUpload = async (e) => {
     const image = e.target.files[0];
     if (!image || !image.type.startsWith("image/")) {
@@ -205,7 +218,8 @@ const AddPet = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Pet name is required";
-    if (!formData.age.trim()) newErrors.age = "Valid pet age is required";
+    if (!formData.ageNumber.trim()) newErrors.ageNumber = "Age is required";
+    if (!formData.ageUnit) newErrors.ageUnit = "Age unit is required";
     if (!category) newErrors.category = "Pet category is required";
     if (!formData.breed.trim()) newErrors.breed = "Breed is required";
     if (!gender) newErrors.gender = "Gender is required";
@@ -221,7 +235,8 @@ const AddPet = () => {
   const resetForm = () => {
     setFormData({
       name: "",
-      age: "",
+      ageNumber: "",
+      ageUnit: "",
       location: "",
       breed: "",
       shortDesc: "",
@@ -244,6 +259,7 @@ const AddPet = () => {
     const now = new Date().toISOString();
     const petData = {
       ...formData,
+      age: `${formData.ageNumber}${formData.ageUnit === 'years' ? 'yr' : 'mo'}`,
       image: imageUrl,
       category: category.value,
       gender: gender.value,
@@ -256,6 +272,10 @@ const AddPet = () => {
       updatedAt: now,
       addedBy: user.email,
     };
+
+    // Remove the separate age fields from the data we send to the server
+    delete petData.ageNumber;
+    delete petData.ageUnit;
 
     try {
       await axiosPublic.post("/adoptPet", petData);
@@ -357,15 +377,39 @@ const AddPet = () => {
                 theme={currentTheme}
                 required
               />
-              <Input
-                label="Pet Age"
-                name="age"
-                value={formData.age}
-                onChange={handleInputChange}
-                error={errors.age}
-                theme={currentTheme}
-                required
-              />
+              
+              {/* Age Input - Split into number and unit */}
+              <div className="mb-5">
+                <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+                  Pet Age <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="ageNumber"
+                    value={formData.ageNumber}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="1"
+                    className={`flex-1 px-4 py-2 rounded-lg ${currentTheme.input} ${errors.ageNumber ? "border-red-500" : ""}`}
+                    placeholder="Age"
+                  />
+                  <Select
+                    options={ageUnits}
+                    value={ageUnits.find(unit => unit.value === formData.ageUnit)}
+                    onChange={handleAgeUnitChange}
+                    placeholder="Unit"
+                    className="flex-1 react-select-container"
+                    classNamePrefix="react-select"
+                    styles={currentTheme.select}
+                  />
+                </div>
+                {(errors.ageNumber || errors.ageUnit) && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.ageNumber || errors.ageUnit}
+                  </p>
+                )}
+              </div>
 
               {/* Category Select */}
               <div className="mb-5">

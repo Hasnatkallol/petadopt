@@ -7,42 +7,50 @@ import Select from "react-select";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 // Reusable Input component
-const Input = ({ label, value, onChange, error, theme }) => {
+const Input = ({ label, name, value, onChange, error, theme, textarea, required, type = "text" }) => {
   const themeStyles = {
     light: {
       text: "text-gray-700",
-      input: "bg-white border-gray-300",
-      error: "border-red-500",
+      input: "bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-400",
+      error: "border-red-500 focus:ring-red-400",
     },
     dark: {
       text: "text-gray-300",
-      input: "bg-gray-700 border-gray-600",
-      error: "border-red-400",
+      input: "bg-gray-700 border-gray-600 focus:border-blue-400 focus:ring-blue-500",
+      error: "border-red-400 focus:ring-red-500",
     },
   };
   const currentTheme = themeStyles[theme] || themeStyles.light;
 
   return (
     <div className="mb-5">
-      <label className={`block mb-1 font-semibold ${currentTheme.text}`}>
-        {label}:
+      <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+        {label}
+        {required && <span className="text-red-500">*</span>}
       </label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full px-3 py-2 border rounded-md ${
-          error ? currentTheme.error : currentTheme.input
-        } ${theme === "dark" ? "text-white" : "text-gray-800"}`}
-      />
-      {error && (
-        <p className="text-red-500 dark:text-red-400 text-sm mt-1">{error}</p>
+      {textarea ? (
+        <textarea
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`w-full px-4 py-2 rounded-lg ${currentTheme.input} ${error ? currentTheme.error : ""}`}
+          rows="4"
+        />
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`w-full px-4 py-2 rounded-lg ${currentTheme.input} ${error ? currentTheme.error : ""}`}
+        />
       )}
+      {error && <p className="text-red-500 dark:text-red-400 text-sm mt-2">{error}</p>}
     </div>
   );
 };
 
-// ✅ Updated SelectField matching AddPet styles
+// SelectField component
 const SelectField = ({ label, options, value, onChange, error, theme }) => {
   const themeStyles = {
     light: {
@@ -111,7 +119,7 @@ const SelectField = ({ label, options, value, onChange, error, theme }) => {
         styles={currentTheme.select}
       />
       {error && (
-        <p className={`${currentTheme.errorText} text-sm mt-1`}>{error}</p>
+        <p className={`${currentTheme.errorText} text-sm mt-2`}>{error}</p>
       )}
     </div>
   );
@@ -133,13 +141,31 @@ const genders = [
   { value: "Unknown", label: "Unknown" },
 ];
 
+const ageUnits = [
+  { value: "months", label: "Months" },
+  { value: "years", label: "Years" },
+];
+
 const UpdatePet = () => {
   const { user, theme } = useContext(FirebaseAuthContext);
   const pet = useLoaderData();
   const axiosSecure = useAxiosSecure();
 
+  // Parse the existing age (format like "2yr" or "6mo")
+  const parseExistingAge = (ageStr) => {
+    if (!ageStr) return { number: "", unit: "" };
+    const number = ageStr.replace(/[^0-9]/g, '');
+    const unit = ageStr.includes('yr') ? 'years' : 'months';
+    return { number, unit };
+  };
+
+  const initialAge = parseExistingAge(pet?.age);
+
   const [name, setName] = useState(() => pet?.name || "");
-  const [age, setAge] = useState(() => pet?.age || "");
+  const [ageNumber, setAgeNumber] = useState(() => initialAge.number || "");
+  const [ageUnit, setAgeUnit] = useState(() => 
+    ageUnits.find(unit => unit.value === initialAge.unit) || null
+  );
   const [category, setCategory] = useState(
     categories.find((c) => c.value === pet?.category) || null
   );
@@ -159,14 +185,28 @@ const UpdatePet = () => {
     light: {
       bg: "bg-gray-50",
       text: "text-gray-800",
-      card: "bg-white border border-gray-100",
+      card: "bg-white border border-gray-200",
+      input: "bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-400",
+      error: "border-red-500 focus:ring-red-400",
       button: "bg-blue-600 hover:bg-blue-700",
+      secondaryText: "text-gray-600",
+      accent: "text-blue-600",
+      checkbox: "border-gray-300",
+      uploadBorder: "border-gray-300",
+      uploadHover: "hover:bg-gray-100",
     },
     dark: {
       bg: "bg-gray-900",
       text: "text-gray-100",
       card: "bg-gray-800 border-gray-700",
-      button: "bg-blue-500 hover:bg-blue-600",
+      input: "bg-gray-700 border-gray-600 focus:border-blue-400 focus:ring-blue-500",
+      error: "border-red-400 focus:ring-red-500",
+      button: "bg-blue-700 hover:bg-blue-600",
+      secondaryText: "text-gray-300",
+      accent: "text-blue-400",
+      checkbox: "border-gray-600",
+      uploadBorder: "border-gray-600",
+      uploadHover: "hover:bg-gray-700",
     },
   };
   const currentTheme = themeStyles[theme] || themeStyles.light;
@@ -210,7 +250,8 @@ const UpdatePet = () => {
   const validate = () => {
     const newErrors = {};
     if (!name.trim()) newErrors.name = "Pet name is required";
-    if (!age.trim()) newErrors.age = "Valid pet age is required";
+    if (!ageNumber.trim()) newErrors.ageNumber = "Age is required";
+    if (!ageUnit) newErrors.ageUnit = "Age unit is required";
     if (!category) newErrors.category = "Pet category is required";
     if (!breed.trim()) newErrors.breed = "Breed is required";
     if (!gender) newErrors.gender = "Gender is required";
@@ -218,21 +259,19 @@ const UpdatePet = () => {
     if (!shortDesc.trim()) newErrors.shortDesc = "Short description is required";
     if (!longDesc.trim()) newErrors.longDesc = "Long description is required";
     if (!imageUrl) newErrors.image = "Pet image is required";
-    return newErrors;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
-      return;
-    }
+    if (!validate()) return;
 
     const now = new Date().toISOString();
     const updateData = {
       name: name.trim(),
-      age: age.trim(),
+      age: `${ageNumber}${ageUnit.value === 'years' ? 'yr' : 'mo'}`,
       image: imageUrl,
       location: location.trim(),
       category: category.value,
@@ -278,108 +317,209 @@ const UpdatePet = () => {
   };
 
   return (
-    <div className={`min-h-screen py-10 ${currentTheme.bg} ${currentTheme.text}`}>
-      <div className={`max-w-4xl mx-auto p-6 rounded-md shadow-md ${currentTheme.card}`}>
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">Update {name}</h1>
-        </div>
-        <form onSubmit={handleUpdate} noValidate>
-          {/* Image Upload */}
-          <div className="mb-6">
-            <label className={`block mb-1 font-semibold ${currentTheme.text}`}>
-              Pet Image:
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className={`w-full px-3 py-2 border rounded-md ${
-                errors.image
-                  ? theme === "dark"
-                    ? "border-red-400"
-                    : "border-red-500"
-                  : theme === "dark"
-                  ? "border-gray-600"
-                  : "border-gray-300"
+    <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text}`}>
+      <div className="container mx-auto px-4 py-8">
+        <div className={`max-w-2xl mx-auto ${currentTheme.card} rounded-xl shadow-lg p-6 md:p-8`}>
+          <h2 className={`text-2xl font-bold mb-6 ${currentTheme.accent}`}>Update {name}</h2>
+
+          <form onSubmit={handleUpdate} noValidate>
+            {/* Image Upload */}
+            <div className="mb-6">
+              <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+                Pet Image <span className="text-red-500">*</span>
+              </label>
+              <div
+                className={`border-2 border-dashed ${currentTheme.uploadBorder} rounded-lg p-4 text-center ${currentTheme.uploadHover}`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="petImage"
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="petImage"
+                  className="cursor-pointer flex flex-col items-center justify-center"
+                >
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt="Pet preview"
+                      className="h-32 w-32 object-cover rounded-md mb-2"
+                    />
+                  ) : (
+                    <>
+                      <svg
+                        className="w-12 h-12 mb-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p className={`text-sm ${currentTheme.secondaryText}`}>
+                        Click to upload or drag and drop
+                      </p>
+                    </>
+                  )}
+                </label>
+              </div>
+              {uploading && (
+                <p className={`text-sm mt-2 ${currentTheme.accent}`}>Uploading...</p>
+              )}
+              {errors.image && (
+                <p className="text-red-500 text-sm mt-2">{errors.image}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Pet Name"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                error={errors.name}
+                theme={theme}
+                required
+              />
+              
+              {/* Age Input - Split into number and unit */}
+              <div className="mb-5">
+                <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+                  Pet Age <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="ageNumber"
+                    value={ageNumber}
+                    onChange={(e) => setAgeNumber(e.target.value)}
+                    min="0"
+                    step="1"
+                    className={`flex-1 px-4 py-2 rounded-lg ${currentTheme.input} ${errors.ageNumber ? currentTheme.error : ""}`}
+                    placeholder="Age"
+                  />
+                  <Select
+                    options={ageUnits}
+                    value={ageUnit}
+                    onChange={setAgeUnit}
+                    placeholder="Unit"
+                    className="flex-1 react-select-container"
+                    classNamePrefix="react-select"
+                    styles={currentTheme.select}
+                  />
+                </div>
+                {(errors.ageNumber || errors.ageUnit) && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.ageNumber || errors.ageUnit}
+                  </p>
+                )}
+              </div>
+
+              {/* Category Select */}
+              <SelectField 
+                label="Pet Category" 
+                options={categories} 
+                value={category} 
+                onChange={setCategory} 
+                error={errors.category} 
+                theme={theme} 
+              />
+
+              <Input
+                label="Breed"
+                name="breed"
+                value={breed}
+                onChange={(e) => setBreed(e.target.value)}
+                error={errors.breed}
+                theme={theme}
+                required
+              />
+
+              {/* Gender Select */}
+              <SelectField 
+                label="Gender" 
+                options={genders} 
+                value={gender} 
+                onChange={setGender} 
+                error={errors.gender} 
+                theme={theme} 
+              />
+
+              <Input
+                label="Location"
+                name="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                error={errors.location}
+                theme={theme}
+                required
+              />
+            </div>
+
+            {/* Vaccinated Checkbox */}
+            <div className="mb-6">
+              <label className={`inline-flex items-center ${currentTheme.text}`}>
+                <input
+                  type="checkbox"
+                  checked={vaccinated}
+                  onChange={() => setVaccinated(prev => !prev)}
+                  className={`form-checkbox h-5 w-5 rounded ${currentTheme.checkbox}`}
+                />
+                <span className="ml-2">Vaccinated</span>
+              </label>
+            </div>
+
+            {/* Short Description */}
+            <Input
+              label="Short Description"
+              name="shortDesc"
+              value={shortDesc}
+              onChange={(e) => setShortDesc(e.target.value)}
+              error={errors.shortDesc}
+              theme={theme}
+              textarea
+              required
+            />
+
+            {/* Long Description */}
+            <div className="mb-6">
+              <label className={`block mb-2 font-medium ${currentTheme.text}`}>
+                Long Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                rows={4}
+                value={longDesc}
+                onChange={(e) => setLongDesc(e.target.value)}
+                className={`w-full px-4 py-2 rounded-lg ${currentTheme.input} ${errors.longDesc ? currentTheme.error : ""}`}
+              />
+              {errors.longDesc && (
+                <p className="text-red-500 text-sm mt-2">{errors.longDesc}</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={uploading}
+              className={`w-full py-3 rounded-lg text-white font-semibold ${
+                uploading
+                  ? "opacity-50 cursor-not-allowed"
+                  : currentTheme.button
               }`}
-            />
-            {uploading && (
-              <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">Uploading...</p>
-            )}
-            {errors.image && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.image}</p>
-            )}
-            {imageUrl && (
-              <img src={imageUrl} alt="Uploaded" className="h-24 mt-2 rounded-md" />
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Pet Name" value={name} onChange={setName} error={errors.name} theme={theme} />
-            <Input label="Pet Age" value={age} onChange={setAge} error={errors.age} theme={theme} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectField label="Pet Category" options={categories} value={category} onChange={setCategory} error={errors.category} theme={theme} />
-            <Input label="Breed" value={breed} onChange={setBreed} error={errors.breed} theme={theme} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectField label="Gender" options={genders} value={gender} onChange={setGender} error={errors.gender} theme={theme} />
-            <Input label="Location" value={location} onChange={setLocation} error={errors.location} theme={theme} />
-          </div>
-
-          <div className="mb-5 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={vaccinated}
-              onChange={(e) => setVaccinated(e.target.checked)}
-              id="vaccinated"
-              className="w-4 h-4"
-            />
-            <label htmlFor="vaccinated" className={`font-medium ${currentTheme.text}`}>
-              Vaccinated
-            </label>
-          </div>
-
-          <Input
-            label="Short Description"
-            value={shortDesc}
-            onChange={setShortDesc}
-            error={errors.shortDesc}
-            theme={theme}
-          />
-
-          <div className="mb-5">
-            <label className={`block mb-1 font-semibold ${currentTheme.text}`}>
-              Long Description:
-            </label>
-            <textarea
-              rows={4}
-              value={longDesc}
-              onChange={(e) => setLongDesc(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md resize-y ${
-                errors.longDesc
-                  ? theme === "dark"
-                    ? "border-red-400"
-                    : "border-red-500"
-                  : theme === "dark"
-                  ? "border-gray-600"
-                  : "border-gray-300"
-              } ${theme === "dark" ? "bg-gray-700 text-white" : "bg-white text-gray-800"}`}
-            />
-            {errors.longDesc && (
-              <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.longDesc}</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className={`w-full py-2 ${currentTheme.button} text-white font-semibold rounded-md transition`}
-          >
-            Update Pet
-          </button>
-        </form>
+            >
+              Update Pet
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
