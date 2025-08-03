@@ -160,7 +160,7 @@ const DonationDetails = () => {
 
         <div className="mt-8">
         
-          <RecommendedCampaigns currentCampaignId={_id} />
+          
         </div>
       </div>
     </div>

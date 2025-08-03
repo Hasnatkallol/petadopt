@@ -1,3 +1,5 @@
+// src/components/RecommendedCampaigns/RecommendedCampaigns.jsx
+
 import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
@@ -8,6 +10,7 @@ const RecommendedCampaigns = () => {
   const { theme } = useContext(FirebaseAuthContext);
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const themeStyles = {
     light: {
@@ -39,6 +42,7 @@ const RecommendedCampaigns = () => {
         setCampaigns(response.data);
       } catch (error) {
         console.error("Error fetching recommended campaigns:", error);
+        setError("Failed to load recommended campaigns.");
       } finally {
         setLoading(false);
       }
@@ -48,6 +52,7 @@ const RecommendedCampaigns = () => {
   }, [axiosPublic]);
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
 
   return (
     <div className={`py-6 ${currentTheme.bg} ${currentTheme.text}`}>
